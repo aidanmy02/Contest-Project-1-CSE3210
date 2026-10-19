@@ -144,6 +144,9 @@
       <FileType>Document</FileType>
     </MASM>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Chess.inc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />

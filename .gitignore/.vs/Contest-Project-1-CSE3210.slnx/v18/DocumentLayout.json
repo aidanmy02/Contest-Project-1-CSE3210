@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{40AAF5D8-8195-4F68-8044-8B3DE191F6DA}|Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210.vcxproj|C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210\\main.asm||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{40AAF5D8-8195-4F68-8044-8B3DE191F6DA}|Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210.vcxproj|solutionrelative:Contest-Project-1-CSE3210\\main.asm||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{40AAF5D8-8195-4F68-8044-8B3DE191F6DA}|Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210.vcxproj|C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210\\Chess.inc||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{40AAF5D8-8195-4F68-8044-8B3DE191F6DA}|Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210.vcxproj|solutionrelative:Contest-Project-1-CSE3210\\Chess.inc||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.asm",
+              "DocumentMoniker": "C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210\\main.asm",
+              "RelativeDocumentMoniker": "Contest-Project-1-CSE3210\\main.asm",
+              "ToolTip": "C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210\\main.asm",
+              "RelativeToolTip": "Contest-Project-1-CSE3210\\main.asm",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-10-19T03:58:21.115Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Chess.inc",
+              "DocumentMoniker": "C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210\\Chess.inc",
+              "RelativeDocumentMoniker": "Contest-Project-1-CSE3210\\Chess.inc",
+              "ToolTip": "C:\\Users\\aidan\\source\\repos\\Contest-Project-1-CSE3210\\Contest-Project-1-CSE3210\\Chess.inc",
+              "RelativeToolTip": "Contest-Project-1-CSE3210\\Chess.inc",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-10-19T03:58:19.512Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
