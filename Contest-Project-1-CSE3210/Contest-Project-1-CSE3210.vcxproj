@@ -140,6 +140,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <MASM Include="Init.asm" />
     <MASM Include="main.asm">
       <FileType>Document</FileType>
     </MASM>
