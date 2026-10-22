@@ -144,6 +144,7 @@
     <MASM Include="main.asm">
       <FileType>Document</FileType>
     </MASM>
+    <MASM Include="WndManager.asm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Chess.inc" />
