@@ -3,8 +3,8 @@ INCLUDE Chess.inc
 .code
 main PROC
 
-CALL init
+	CALL init
 
-INVOKE ExitProcess, 0
+	INVOKE ExitProcess, 0
 main ENDP
 END main

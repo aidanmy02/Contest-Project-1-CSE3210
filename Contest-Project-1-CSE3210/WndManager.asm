@@ -48,22 +48,23 @@ CW_USEDEFAULT EQU 80000000h					; Source: https://learn.microsoft.com/en-us/wind
 ; WndProc for WNDCLASSEXA
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 WndProc PROC
-PUSH ebp
-MOV ebp, esp
+	PUSH ebp
+	MOV ebp, esp
 
-POP ebp
-RET
+	POP ebp
+	RET
 WndProc ENDP
 
-; Registers window class and creates window
-createWnd PROC
-PUSH ebp
-MOV ebp, esp
+	; Registers window class and creates window
+	createWnd PROC
+	PUSH ebp
+	MOV ebp, esp
 
-; Soruce: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
-INVOKE CreateWindowExA, exStyle, ADDR className, ADDR windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, 400, 400, NULL, NULL, NULL, NULL
+	; Soruce: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
+	INVOKE CreateWindowExA, exStyle, ADDR className, ADDR windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, 400, 400, NULL, NULL, NULL, NULL
 
-POP ebp
-RET
+	POP ebp
+	RET
 createWnd ENDP
+
 END
