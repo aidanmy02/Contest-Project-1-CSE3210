@@ -4,6 +4,12 @@ INCLUDE Chess.inc
 ; Params for WNDCLASSEXA Struct
 hInstance DWORD ?
 
+; Params for RegisterClassExA
+classAtom DWORD ?		; Output Param
+
+; Params for CreateWindowExA
+hWnd DWORD ?			; Output Param
+
 .data
 ; Structs
 ; Source: http://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
@@ -67,7 +73,11 @@ createWnd PROC
 	MOV hInstance, eax
 	MOV WndClass.hInstance, eax
 
+	INVOKE RegisterClassExA, ADDR WndClass
+	MOV classAtom, eax
+
 	INVOKE CreateWindowExA, exStyle, ADDR className, ADDR windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, 400, 400, NULL, NULL, hInstance, NULL
+	MOV hWnd, eax
 
 	POP ebp
 	RET
