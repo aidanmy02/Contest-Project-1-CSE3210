@@ -4,6 +4,11 @@
 .stack 4096
 OPTION PROC:PRIVATE
 
+; Windows SDK Libraries
+INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/cpp/assembler/masm/includelib-masm?view=msvc-170
+						;			https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
+
+
 ; Subroutine Prototypes
 main PROTO
 init PROTO
