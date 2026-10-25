@@ -113,7 +113,7 @@ createWnd PROC
 	MOV hInstance, eax
 	MOV WndClass.hInstance, eax
 
-	INVOKE LoadCursorA, hInstance,\				; hInstance
+	INVOKE LoadCursorA, NULL,\					; hInstance
 						IDC_ARROW				; lpCursorName
 
 	; Check if cursor was successfully loaded
