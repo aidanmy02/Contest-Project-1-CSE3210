@@ -8,7 +8,7 @@ init PROC
 	CALL createWnd
 
 	POP ebp
-	RET 8
+	RET
 init ENDP
 
 END

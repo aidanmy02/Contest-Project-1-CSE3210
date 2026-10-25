@@ -47,18 +47,21 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						NULL,\					; hCursor
 						NULL,\					; hbrBackground
 						NULL,\					; lpszMenuName
-						className,\				; lpszClassName
+						OFFSET className,\		; lpszClassName
 						NULL  >					; hIconSm
 
 ; Params for LoadCursorA
 IDC_ARROW EQU 32512							; https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
 
-; Params for CreateWindowExA
+; Params for CreateWindowExA in createWnd
 exStyle DWORD NULL							; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-wndName BYTE "Testing Testing 123",0
+wndName BYTE "Testing Testing 123", 0
 style DWORD 10000000h						; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 CW_USEDEFAULT EQU 80000000h					; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 wndLen EQU 400
+
+; Params for CreateWindowExA in errorWnd
+errorWndName BYTE "Error", 0 
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -78,9 +81,6 @@ WndProc ENDP
 
 ; Registers window class and creates window
 createWnd PROC
-	PUSH ebp
-	MOV ebp, esp
-
 	; Get instance handle for current module and register window class
 	INVOKE GetModuleHandleA, NULL
 	MOV hInstance, eax
@@ -105,8 +105,8 @@ createWnd PROC
 							hInstance,\			; hInstance
 							NULL				; lpParam
 	MOV hWnd, eax
+	INVOKE GetClassNameA, hWnd, ADDR buffer, bufferSize
 
-	POP ebp
 	RET
 createWnd ENDP
 
