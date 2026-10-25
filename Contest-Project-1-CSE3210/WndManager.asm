@@ -11,6 +11,10 @@ classAtom DWORD ?		; Output Param
 hWnd DWORD ?			; Output Param
 
 .data
+;TODO: For tests remove later
+buffer BYTE 128 DUP(0)
+bufferSize DWORD SIZEOF buffer
+
 ; Structs
 ; Source: http://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
 WNDCLASSEXA STRUCT
@@ -59,8 +63,13 @@ WndProc PROC
 	PUSH ebp
 	MOV ebp, esp
 
+	INVOKE DefWindowProcA,	[ebp+8],\	; hWnd
+							[ebp+12],\	; uMsg
+							[ebp+16],\	; wParam
+							[ebp+20]	; lParam
+
 	POP ebp
-	RET
+	RET 16
 WndProc ENDP
 
 ; Registers window class and creates window
