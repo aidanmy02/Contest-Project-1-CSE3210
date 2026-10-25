@@ -12,7 +12,6 @@ hWnd DWORD ?			; Output Param
 
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
-errTitle DWORD ?		; Input Param
 
 .data
 ;TODO: For tests remove later
@@ -72,7 +71,7 @@ ERR_CURSOR EQU 2
 ERR_REG_CLASS EQU 3
 
 ; Error Messages for errWnd
-defaultErrTitle BYTE "Error", 0
+errTitle BYTE "Error", 0
 defaultErrMsg BYTE "Unknown Error", 0
 createErrMsg BYTE "CreateWindowExA failed", 0
 modHandleErrMsg BYTE "GetModuleHandleA failed", 0
@@ -82,17 +81,27 @@ regClassErrMsg BYTE "RegisterClassExA failed", 0
 .code
 ; WndProc for WNDCLASSEXA
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-WndProc PROC
-	PUSH ebp
-	MOV ebp, esp
+WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
+	; Get WP code
+	MOV eax, wpUMsg
+	
+	; Jump to code action
+	CMP eax, WP_CREATE
+	JZ wpCreate
+	JMP wpDefault
 
-	INVOKE DefWindowProcA,	[ebp+8],\	; hWnd
-							[ebp+12],\	; uMsg
-							[ebp+16],\	; wParam
-							[ebp+20]	; lParam
+	wpCreate:
+		CALL createWnd
+		JMP wpDone
 
-	POP ebp
-	RET 16
+	wpDefault:
+		INVOKE DefWindowProcA,	wpHWnd,\	; hWnd
+								wpUMsg,\	; uMsg
+								wpWParam,\	; wParam
+								wpLParam	; lParam
+
+	wpDone:
+	RET
 WndProc ENDP
 
 ; Registers window class and creates window
@@ -188,7 +197,7 @@ errWnd PROC
 	JZ cursorErr
 	CMP eax, ERR_REG_CLASS
 	JZ regClassErr
-	JMP default
+	JMP errDefault
 
 	createErr:
 	PUSH OFFSET createErrMsg
@@ -210,12 +219,11 @@ errWnd PROC
 	POP errMsg
 	JMP postMsg
 
+	errDefault:
 	PUSH OFFSET defaultErrMsg
 	POP errMsg
 
-
 	postMsg:
-	PUSH OFFSET defaultErrTitle
 	INVOKE MessageBoxA,		NULL,\				; hWnd
 							errMsg,\			; lpText
 							errTitle,\			; lpCaption

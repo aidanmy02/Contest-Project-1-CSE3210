@@ -5,7 +5,10 @@ init PROC
 	PUSH ebp
 	MOV ebp, esp
 
-	CALL createWnd
+	INVOKE WndProc,	NULL,\				; hWnd
+					WP_CREATE,\			; uMsg
+					NULL,\				; wParam
+					NULL				; lParam
 
 	POP ebp
 	RET

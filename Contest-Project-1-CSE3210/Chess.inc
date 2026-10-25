@@ -11,10 +11,16 @@ INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/
 ;Global Constants
 NULL EQU 0
 
+; WndProc Codes
+WP_CREATE EQU 0
+
 ; Subroutine Prototypes
 main PROTO
 init PROTO
-createWnd PROTO
+WndProc PROTO			hWnd:DWORD,\
+						uMsg:DWORD,\
+						wParam:DWORD,\
+						lParam:DWORD
 
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later
