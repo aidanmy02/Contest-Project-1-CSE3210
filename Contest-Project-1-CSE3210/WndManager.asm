@@ -50,6 +50,9 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						className,\				; lpszClassName
 						NULL  >					; hIconSm
 
+; Params for LoadCursorA
+IDC_ARROW EQU 32512							; https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
+
 ; Params for CreateWindowExA
 exStyle DWORD NULL							; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 wndName BYTE "Testing Testing 123",0
@@ -82,6 +85,9 @@ createWnd PROC
 	INVOKE GetModuleHandleA, NULL
 	MOV hInstance, eax
 	MOV WndClass.hInstance, eax
+ 
+	INVOKE LoadCursorA, hInstance, IDC_ARROW
+	MOV WndClass.hCursor, eax
 
 	INVOKE RegisterClassExA, ADDR WndClass
 	MOV classAtom, eax
