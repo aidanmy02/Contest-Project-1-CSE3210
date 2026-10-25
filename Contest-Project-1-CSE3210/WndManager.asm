@@ -9,6 +9,7 @@ classAtom DWORD ?		; Output Param
 
 ; Params for CreateWindowExA
 hWnd DWORD ?			; Output Param
+errHWnd DWORD ?
 
 .data
 ;TODO: For tests remove later
@@ -35,6 +36,7 @@ WNDCLASSEXA ENDS
 ; Params for WNDCLASSEXA Struct
 CS_NOCLOSE EQU 0200H						; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
 className BYTE "Wnd",0
+COLOR_WINDOW EQU 5
 
 ; Instance of WNDCLASSEXA
 WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
@@ -45,7 +47,7 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						hInstance,\				; hInstance
 						NULL,\					; hIcon
 						NULL,\					; hCursor
-						NULL,\					; hbrBackground
+						COLOR_WINDOW + 1,\		; hbrBackground
 						NULL,\					; lpszMenuName
 						OFFSET className,\		; lpszClassName
 						NULL  >					; hIconSm
@@ -62,7 +64,14 @@ wndLen EQU 400
 
 ; Params for CreateWindowExA in errorWnd
 errorWndName BYTE "Error", 0
-WS_POPUP EQU 8000000h
+WS_POPUPWINDOW EQU 80000000h OR 00800000h OR 00080000h ; 
+
+; Params for ShowWindow
+SW_NORMAL EQU 1
+errX EQU 400
+errY EQU 200
+errWidth EQU 200
+errHeight EQU 100
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -83,12 +92,10 @@ WndProc ENDP
 ; Registers window class and creates window
 createWnd PROC
 	; Get instance handle for current module and register window class
-	CALL errorWnd
-
 	INVOKE GetModuleHandleA, NULL
 	MOV hInstance, eax
 	MOV WndClass.hInstance, eax
- 
+
 	INVOKE LoadCursorA, hInstance, IDC_ARROW
 	MOV WndClass.hCursor, eax
 
@@ -108,26 +115,33 @@ createWnd PROC
 							hInstance,\			; hInstance
 							NULL				; lpParam
 	MOV hWnd, eax
+	CALL errWnd
+
 
 	RET
 createWnd ENDP
 
 ; Creates error popup window
-errorWnd PROC
+errWnd PROC
+	; Save current hWnd of main window
 	INVOKE CreateWindowExA, exStyle,\			; dwExStyle
-							NULL,\				; lpClassName
+							ADDR className,\	; lpClassName
 							ADDR errorWndName,\	; lpWindowName
-							WS_POPUP,\			; dwStyle
-							CW_USEDEFAULT,\		; x
-							CW_USEDEFAULT,\		; y
-							CW_USEDEFAULT,\		; nWidth
-							CW_USEDEFAULT,\		; nHeight
+							WS_POPUPWINDOW,\	; dwStyle
+							errX,\				; x
+							errY,\				; y
+							errWidth,\			; nWidth
+							errHeight,\			; nHeight
 							NULL,\				; hWndParent
 							NULL,\				; hMenu
-							hInstance,\			; hInstance
+							NULL,\				; hInstance
 							NULL				; lpParam
+	MOV errHWnd, eax
+
+	INVOKE ShowWindow,		errHWnd,\			;hWnd
+							SW_NORMAL			;nCmdShow
 
 	RET
-errorWnd ENDP
+errWnd ENDP
 
 END
