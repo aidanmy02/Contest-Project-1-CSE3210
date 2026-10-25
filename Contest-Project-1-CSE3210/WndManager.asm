@@ -67,12 +67,17 @@ wndLen EQU 400
 
 ; Error Codes
 ERR_CREATE EQU 0
+ERR_GET_HANDLE EQU 1
+ERR_CURSOR EQU 2
+ERR_REG_CLASS EQU 3
 
 ; Error Messages for errWnd
+defaultErrTitle BYTE "Error", 0
 defaultErrMsg BYTE "Unknown Error", 0
-defaultErrTitle BYTE "Error: Unknown", 0
 createErrMsg BYTE "CreateWindowExA failed", 0
-createErrTitle BYTE "Error: CreateWindowExA", 0
+modHandleErrMsg BYTE "GetModuleHandleA failed", 0
+loadCursorErrMsg BYTE "LoadCursorA failed", 0
+regClassErrMsg BYTE "RegisterClassExA failed", 0
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -94,13 +99,47 @@ WndProc ENDP
 createWnd PROC
 	; Get instance handle for current module and register window class
 	INVOKE GetModuleHandleA, NULL
+
+	; Check if module handle was successfully obtained
+	CMP eax, NULL
+	JNZ gotModuleHandle
+
+	; GetModuleHandleA failed
+	MOV eax, ERR_GET_HANDLE
+	PUSH eax
+	CALL errWnd
+
+	gotModuleHandle:
 	MOV hInstance, eax
 	MOV WndClass.hInstance, eax
 
-	INVOKE LoadCursorA, hInstance, IDC_ARROW
+	INVOKE LoadCursorA, hInstance,\				; hInstance
+						IDC_ARROW				; lpCursorName
+
+	; Check if cursor was successfully loaded
+	CMP eax, NULL
+	JNZ cursorLoaded
+
+	; LoadCursorA failed
+	MOV eax, ERR_CURSOR
+	PUSH eax
+	CALL errWnd
+
+	cursorLoaded:
 	MOV WndClass.hCursor, eax
 
 	INVOKE RegisterClassExA, ADDR WndClass
+
+	; Check if class was registered
+	CMP eax, NULL
+	JNZ classRegistered
+
+	; RegisterClassExA failed
+	MOV eax, ERR_REG_CLASS
+	PUSH eax
+	CALL errWnd
+
+	classRegistered:
 	MOV classAtom, eax
 
 	INVOKE CreateWindowExA, exStyle,\			; dwExStyle
@@ -140,25 +179,43 @@ errWnd PROC
 	; Get error code
 	MOV eax, [ebp + 8]
 
-	; Creation error
-	CMP eax, 0
+	; Identifying error type
+	CMP eax, ERR_CREATE
 	JZ createErr
-
+	CMP eax, ERR_GET_HANDLE
+	JZ getHandleErr
+	CMP eax, ERR_CURSOR
+	JZ cursorErr
+	CMP eax, ERR_REG_CLASS
+	JZ regClassErr
 	JMP default
 
 	createErr:
 	PUSH OFFSET createErrMsg
 	POP errMsg
-	PUSH OFFSET createErrTitle
-	POP errTitle
+	JMP postMsg
+
+	getHandleErr:
+	PUSH OFFSET modHandleErrMsg
+	POP errMsg
+	JMP postMsg
+
+	cursorErr:
+	PUSH OFFSET loadCursorErrMsg
+	POP errMsg
+	JMP postMsg
+
+	regClassErr:
+	PUSH OFFSET regClassErrMsg
+	POP errMsg
 	JMP postMsg
 
 	PUSH OFFSET defaultErrMsg
 	POP errMsg
-	PUSH OFFSET defaultErrTitle
-	POP errTitle
+
 
 	postMsg:
+	PUSH OFFSET defaultErrTitle
 	INVOKE MessageBoxA,		NULL,\				; hWnd
 							errMsg,\			; lpText
 							errTitle,\			; lpCaption
