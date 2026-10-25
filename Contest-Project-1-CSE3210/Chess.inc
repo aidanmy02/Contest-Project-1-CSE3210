@@ -47,6 +47,7 @@ ExitProcess PROTO,		dwExitCode:DWORD
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
 GetModuleHandleA PROTO,	lpModuleName:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursora
 LoadCursorA PROTO,		hInstance:DWORD,\
 						lpCursorName:DWORD
 

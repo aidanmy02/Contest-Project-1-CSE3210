@@ -61,7 +61,8 @@ CW_USEDEFAULT EQU 80000000h					; Source: https://learn.microsoft.com/en-us/wind
 wndLen EQU 400
 
 ; Params for CreateWindowExA in errorWnd
-errorWndName BYTE "Error", 0 
+errorWndName BYTE "Error", 0
+WS_POPUP EQU 8000000h
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -82,6 +83,8 @@ WndProc ENDP
 ; Registers window class and creates window
 createWnd PROC
 	; Get instance handle for current module and register window class
+	CALL errorWnd
+
 	INVOKE GetModuleHandleA, NULL
 	MOV hInstance, eax
 	MOV WndClass.hInstance, eax
@@ -105,9 +108,26 @@ createWnd PROC
 							hInstance,\			; hInstance
 							NULL				; lpParam
 	MOV hWnd, eax
-	INVOKE GetClassNameA, hWnd, ADDR buffer, bufferSize
 
 	RET
 createWnd ENDP
+
+; Creates error popup window
+errorWnd PROC
+	INVOKE CreateWindowExA, exStyle,\			; dwExStyle
+							NULL,\				; lpClassName
+							ADDR errorWndName,\	; lpWindowName
+							WS_POPUP,\			; dwStyle
+							CW_USEDEFAULT,\		; x
+							CW_USEDEFAULT,\		; y
+							CW_USEDEFAULT,\		; nWidth
+							CW_USEDEFAULT,\		; nHeight
+							NULL,\				; hWndParent
+							NULL,\				; hMenu
+							hInstance,\			; hInstance
+							NULL				; lpParam
+
+	RET
+errorWnd ENDP
 
 END
