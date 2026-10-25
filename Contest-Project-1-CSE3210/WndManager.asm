@@ -52,9 +52,10 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 
 ; Params for CreateWindowExA
 exStyle DWORD NULL							; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-windowName BYTE "Testing Testing 123",0
+wndName BYTE "Testing Testing 123",0
 style DWORD 10000000h						; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 CW_USEDEFAULT EQU 80000000h					; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
+wndLen EQU 400
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -85,7 +86,18 @@ createWnd PROC
 	INVOKE RegisterClassExA, ADDR WndClass
 	MOV classAtom, eax
 
-	INVOKE CreateWindowExA, exStyle, ADDR className, ADDR windowName, style, CW_USEDEFAULT, CW_USEDEFAULT, 400, 400, NULL, NULL, hInstance, NULL
+	INVOKE CreateWindowExA, exStyle,\			; dwExStyle
+							ADDR className,\	; lpClassName
+							ADDR wndName,\		; lpWindowName
+							style,\				; dwStyle
+							CW_USEDEFAULT,\		; x
+							CW_USEDEFAULT,\		; y
+							wndLen,\			; nWidth
+							wndLen,\			; nHeight
+							NULL,\				; hWndParent
+							NULL,\				; hMenu
+							hInstance,\			; hInstance
+							NULL				; lpParam
 	MOV hWnd, eax
 
 	POP ebp

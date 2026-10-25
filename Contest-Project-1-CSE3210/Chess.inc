@@ -18,14 +18,29 @@ createWnd PROTO
 
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later
-GetClassNameA PROTO,	hWnd:DWORD
+GetClassNameA PROTO,	hWnd:DWORD,\
+						lpClassName:DWORD,\
+						nMaxCount:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
-CreateWindowExA PROTO,	dwExStyle:DWORD, lpClassName:DWORD, lpWindowName:DWORD, dwStyle:DWORD, x:DWORD, y:DWORD, \
-						nWidth:DWORD, nHeight:DWORD, hWndParent:DWORD, hMenu:DWORD, hInstance:DWORD, lpParam:DWORD
+CreateWindowExA PROTO,	dwExStyle:DWORD,\
+						lpClassName:DWORD,\
+						lpWindowName:DWORD,\
+						dwStyle:DWORD,\
+						x:DWORD,\
+						y:DWORD,\
+						nWidth:DWORD,\
+						nHeight:DWORD,\
+						hWndParent:DWORD,\
+						hMenu:DWORD,\
+						hInstance:DWORD,\
+						lpParam:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowproca
-DefWindowProcA PROTO,	hWnd:DWORD, uMsg:DWORD, wParam:DWORD, lParam:DWORD
+DefWindowProcA PROTO,	hWnd:DWORD,\
+						uMsg:DWORD,\
+						wParam:DWORD,\
+						lParam:DWORD
 
 ExitProcess PROTO,		dwExitCode:DWORD
 
