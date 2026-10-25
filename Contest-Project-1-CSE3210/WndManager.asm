@@ -11,6 +11,10 @@ classAtom DWORD ?		; Output Param
 hWnd DWORD ?			; Output Param
 errHWnd DWORD ?
 
+; Params for MessageBoxA
+errMsg DWORD ?
+errTitle DWORD ?
+
 .data
 ;TODO: For tests remove later
 buffer BYTE 128 DUP(0)
@@ -55,20 +59,19 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 ; Params for LoadCursorA
 IDC_ARROW EQU 32512							; https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
 
-; Params for CreateWindowExA in createWnd
+; Params for CreateWindowExA
 exStyle DWORD NULL							; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 wndName BYTE "Testing Testing 123", 0
 style DWORD 10000000h						; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 CW_USEDEFAULT EQU 80000000h					; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 wndLen EQU 400
 
-; Params for CreateWindowExA in errorWnd
-errorWndName BYTE "Error", 0
-WS_POPUPWINDOW EQU 80000000h OR 00800000h OR 00080000h ; 
-
 ; Error Codes
+ERR_CREATE EQU 0
 
 ; Error Messages for errWnd
+defaultErrMsg BYTE "Unknown Error", 0
+defaultErrTitle BYTE "Error: Unknown", 0
 createErrMsg BYTE "CreateWindowExA failed", 0
 createErrTitle BYTE "Error: CreateWindowExA", 0
 
@@ -127,10 +130,17 @@ createWnd ENDP
 
 ; Creates error popup window
 errWnd PROC
-	INVOKE MessageBoxA,		NULL,\					; hWnd
-							ADDR createErrMsg,\		; lpText
-							ADDR createErrTitle,\	; lpCaption
-							NULL					; uType
+	default:
+	PUSH OFFSET defaultErrMsg
+	POP errMsg
+	PUSH OFFSET defaultErrTitle
+	POP errTitle
+
+	postMsg:
+	INVOKE MessageBoxA,		NULL,\				; hWnd
+							errMsg,\			; lpText
+							errTitle,\			; lpCaption
+							NULL				; uType
 	INVOKE ExitProcess, 0
 errWnd ENDP
 
