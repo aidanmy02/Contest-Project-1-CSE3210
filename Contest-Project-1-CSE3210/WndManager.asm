@@ -66,12 +66,11 @@ wndLen EQU 400
 errorWndName BYTE "Error", 0
 WS_POPUPWINDOW EQU 80000000h OR 00800000h OR 00080000h ; 
 
-; Params for ShowWindow
-SW_NORMAL EQU 1
-errX EQU 400
-errY EQU 200
-errWidth EQU 200
-errHeight EQU 100
+; Error Codes
+
+; Error Messages for errWnd
+createErrMsg BYTE "CreateWindowExA failed", 0
+createErrTitle BYTE "Error: CreateWindowExA", 0
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -114,34 +113,25 @@ createWnd PROC
 							NULL,\				; hMenu
 							hInstance,\			; hInstance
 							NULL				; lpParam
-	MOV hWnd, eax
+	
+	; Check if window was successfully created
+	CMP eax, 0
+	JNZ windowCreated
 	CALL errWnd
 
+	windowCreated:
+	MOV hWnd, eax
 
 	RET
 createWnd ENDP
 
 ; Creates error popup window
 errWnd PROC
-	; Save current hWnd of main window
-	INVOKE CreateWindowExA, exStyle,\			; dwExStyle
-							ADDR className,\	; lpClassName
-							ADDR errorWndName,\	; lpWindowName
-							WS_POPUPWINDOW,\	; dwStyle
-							errX,\				; x
-							errY,\				; y
-							errWidth,\			; nWidth
-							errHeight,\			; nHeight
-							NULL,\				; hWndParent
-							NULL,\				; hMenu
-							NULL,\				; hInstance
-							NULL				; lpParam
-	MOV errHWnd, eax
-
-	INVOKE ShowWindow,		errHWnd,\			;hWnd
-							SW_NORMAL			;nCmdShow
-
-	RET
+	INVOKE MessageBoxA,		NULL,\					; hWnd
+							ADDR createErrMsg,\		; lpText
+							ADDR createErrTitle,\	; lpCaption
+							NULL					; uType
+	INVOKE ExitProcess, 0
 errWnd ENDP
 
 END

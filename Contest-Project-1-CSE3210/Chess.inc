@@ -51,6 +51,12 @@ GetModuleHandleA PROTO,	lpModuleName:DWORD
 LoadCursorA PROTO,		hInstance:DWORD,\
 						lpCursorName:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxa					;
+MessageBoxA PROTO,		hWnd:DWORD,\
+						lpTEXT:DWORD,\
+						lpCaption:DWORD,\
+						uType:DWORD
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
 RegisterClassExA PROTO,	wndClassPTR:DWORD
 
