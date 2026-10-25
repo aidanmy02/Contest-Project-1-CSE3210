@@ -1,5 +1,8 @@
 INCLUDE Chess.inc
 
+.data
+status DWORD 1
+
 .code
 init PROC
 	PUSH ebp
@@ -9,6 +12,7 @@ init PROC
 					WP_CREATE,\			; uMsg
 					NULL,\				; wParam
 					NULL				; lParam
+	MOV status, eax
 
 	POP ebp
 	RET

@@ -13,6 +13,7 @@ NULL EQU 0
 
 ; WndProc Codes
 WP_CREATE EQU 0
+WP_DESTROY EQU 1
 
 ; Subroutine Prototypes
 main PROTO
@@ -47,6 +48,9 @@ DefWindowProcA PROTO,	hWnd:DWORD,\
 						uMsg:DWORD,\
 						wParam:DWORD,\
 						lParam:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
+DestroyWindow PROTO,	hWnd:DWORD
 
 ExitProcess PROTO,		dwExitCode:DWORD
 

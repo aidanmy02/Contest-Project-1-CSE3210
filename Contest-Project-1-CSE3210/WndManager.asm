@@ -88,10 +88,17 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Jump to code action
 	CMP eax, WP_CREATE
 	JZ wpCreate
+	CMP eax, WP_DESTROY
+	JZ wpDestroy
 	JMP wpDefault
 
 	wpCreate:
 		CALL createWnd
+		MOV eax, 0
+		JMP wpDone
+
+	wpDestroy:
+		INVOKE DestroyWindow, hWnd			; hWnd
 		JMP wpDone
 
 	wpDefault:

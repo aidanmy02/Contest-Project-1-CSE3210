@@ -2,8 +2,12 @@ INCLUDE Chess.inc
 
 .code
 main PROC
-
 	CALL init
+
+	INVOKE WndProc,	NULL,\				; hWnd
+					WP_DESTROY,\		; uMsg
+					NULL,\				; wParam
+					NULL				; lParam
 
 	INVOKE ExitProcess, 0
 main ENDP
