@@ -9,11 +9,10 @@ classAtom DWORD ?		; Output Param
 
 ; Params for CreateWindowExA
 hWnd DWORD ?			; Output Param
-errHWnd DWORD ?
 
 ; Params for MessageBoxA
-errMsg DWORD ?
-errTitle DWORD ?
+errMsg DWORD ?			; Input Param
+errTitle DWORD ?		; Input Param
 
 .data
 ;TODO: For tests remove later
@@ -120,6 +119,10 @@ createWnd PROC
 	; Check if window was successfully created
 	CMP eax, 0
 	JNZ windowCreated
+
+	; CreateWindowExA failed
+	MOV eax, ERR_CREATE
+	PUSH eax
 	CALL errWnd
 
 	windowCreated:
@@ -131,6 +134,25 @@ createWnd ENDP
 ; Creates error popup window
 errWnd PROC
 	default:
+	PUSH ebp
+	MOV ebp, esp
+	
+	; Get error code
+	MOV eax, [ebp + 8]
+
+	; Creation error
+	CMP eax, 0
+	JZ createErr
+
+	JMP default
+
+	createErr:
+	PUSH OFFSET createErrMsg
+	POP errMsg
+	PUSH OFFSET createErrTitle
+	POP errTitle
+	JMP postMsg
+
 	PUSH OFFSET defaultErrMsg
 	POP errMsg
 	PUSH OFFSET defaultErrTitle
@@ -141,6 +163,8 @@ errWnd PROC
 							errMsg,\			; lpText
 							errTitle,\			; lpCaption
 							NULL				; uType
+
+	POP ebp
 	INVOKE ExitProcess, 0
 errWnd ENDP
 
