@@ -54,6 +54,9 @@ DestroyWindow PROTO,	hWnd:DWORD
 
 ExitProcess PROTO,		dwExitCode:DWORD
 
+GetClientRect PROTO,	hWnd:DWORD,\
+						lpRect:DWORD
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
 GetModuleHandleA PROTO,	lpModuleName:DWORD
 

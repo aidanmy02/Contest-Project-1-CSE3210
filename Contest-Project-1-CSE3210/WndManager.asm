@@ -36,9 +36,7 @@ WNDCLASSEXA STRUCT
 WNDCLASSEXA ENDS
 
 ; Params for WNDCLASSEXA Struct
-CS_NOCLOSE EQU 0200H						; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
 className BYTE "Wnd",0
-COLOR_WINDOW EQU 5
 
 ; Instance of WNDCLASSEXA
 WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
@@ -54,21 +52,9 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						OFFSET className,\		; lpszClassName
 						NULL  >					; hIconSm
 
-; Params for LoadCursorA
-IDC_ARROW EQU 32512							; https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
-
 ; Params for CreateWindowExA
-exStyle DWORD NULL							; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 wndName BYTE "Testing Testing 123", 0
-style DWORD 10000000h						; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-CW_USEDEFAULT EQU 80000000h					; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 wndLen EQU 400
-
-; Error Codes
-ERR_CREATE EQU 0
-ERR_GET_HANDLE EQU 1
-ERR_CURSOR EQU 2
-ERR_REG_CLASS EQU 3
 
 ; Error Messages for errWnd
 errTitle BYTE "Error", 0
@@ -77,6 +63,24 @@ createErrMsg BYTE "CreateWindowExA failed", 0
 modHandleErrMsg BYTE "GetModuleHandleA failed", 0
 loadCursorErrMsg BYTE "LoadCursorA failed", 0
 regClassErrMsg BYTE "RegisterClassExA failed", 0
+
+; Codes
+; Error Codes
+ERR_CREATE EQU 0
+ERR_GET_HANDLE EQU 1
+ERR_CURSOR EQU 2
+ERR_REG_CLASS EQU 3
+
+; WNDCLASSEXA Codes
+CS_NOCLOSE EQU 0200H	; style				; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
+COLOR_WINDOW EQU 5		; hbrBackground		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolor
+
+; LoadCursorA Codes
+IDC_ARROW EQU 32512		; lpCursorName		; Source: https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
+
+; CreateWindowExA Codes
+WS_VISIBLE EQU 10000000h	; style			; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+CW_USEDEFAULT EQU 80000000h	; x, y			; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -158,10 +162,10 @@ createWnd PROC
 	classRegistered:
 	MOV classAtom, eax
 
-	INVOKE CreateWindowExA, exStyle,\			; dwExStyle
+	INVOKE CreateWindowExA, NULL,\			; dwExStyle
 							ADDR className,\	; lpClassName
 							ADDR wndName,\		; lpWindowName
-							style,\				; dwStyle
+							WS_VISIBLE,\		; dwStyle
 							CW_USEDEFAULT,\		; x
 							CW_USEDEFAULT,\		; y
 							wndLen,\			; nWidth
@@ -233,7 +237,7 @@ errWnd PROC
 	postMsg:
 	INVOKE MessageBoxA,		NULL,\				; hWnd
 							errMsg,\			; lpText
-							errTitle,\			; lpCaption
+							ADDR errTitle,\			; lpCaption
 							NULL				; uType
 
 	POP ebp

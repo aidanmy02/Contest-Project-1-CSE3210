@@ -1,7 +1,7 @@
 INCLUDE Chess.inc
 
-.data
-status DWORD 1
+.data?
+status DWORD ?
 
 .code
 init PROC
