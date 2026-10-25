@@ -79,8 +79,17 @@ COLOR_WINDOW EQU 5		; hbrBackground		; Source: https://learn.microsoft.com/en-us
 IDC_ARROW EQU 32512		; lpCursorName		; Source: https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
 
 ; CreateWindowExA Codes
-WS_VISIBLE EQU 10000000h	; style			; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-CW_USEDEFAULT EQU 80000000h	; x, y			; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
+WS_OVERLAPPED EQU 00000000h		; style		; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+WS_CAPTION EQU 00C00000h		;
+WS_SYSMENU EQU 00080000h		;
+WS_THICKFRAME EQU 00040000h		;
+WS_MINIMIZEBOX EQU 00020000h	;
+WS_MAXIMIZEBOX EQU 00010000h	;
+WS_OVERLAPPEDWINDOW EQU 00CF0000h
+CW_USEDEFAULT EQU 80000000h		; x, y		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
+
+; ShowWindow Codes
+SW_SHOWDEFAULT EQU 10
 
 .code
 ; WndProc for WNDCLASSEXA
@@ -162,18 +171,18 @@ createWnd PROC
 	classRegistered:
 	MOV classAtom, eax
 
-	INVOKE CreateWindowExA, NULL,\			; dwExStyle
-							ADDR className,\	; lpClassName
-							ADDR wndName,\		; lpWindowName
-							WS_VISIBLE,\		; dwStyle
-							CW_USEDEFAULT,\		; x
-							CW_USEDEFAULT,\		; y
-							wndLen,\			; nWidth
-							wndLen,\			; nHeight
-							NULL,\				; hWndParent
-							NULL,\				; hMenu
-							hInstance,\			; hInstance
-							NULL				; lpParam
+	INVOKE CreateWindowExA, NULL,\					; dwExStyle
+							ADDR className,\		; lpClassName
+							ADDR wndName,\			; lpWindowName
+							WS_OVERLAPPEDWINDOW,\	; dwStyle
+							CW_USEDEFAULT,\			; x
+							CW_USEDEFAULT,\			; y
+							wndLen,\				; nWidth
+							wndLen,\				; nHeight
+							NULL,\					; hWndParent
+							NULL,\					; hMenu
+							hInstance,\				; hInstance
+							NULL					; lpParam
 	
 	; Check if window was successfully created
 	CMP eax, 0
@@ -186,6 +195,9 @@ createWnd PROC
 
 	windowCreated:
 	MOV hWnd, eax
+
+	INVOKE ShowWindow,		hWnd,					; hWnd
+							SW_SHOWDEFAULT			; nCmdShow
 
 	RET
 createWnd ENDP

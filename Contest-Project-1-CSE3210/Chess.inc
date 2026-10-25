@@ -76,3 +76,8 @@ RegisterClassExA PROTO,	wndClassPTR:DWORD
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 ShowWindow PROTO,		hWnd:DWORD,\
 						nCmdShow:DWORD
+
+WinMain PROTO,			hInstance:DWORD,\
+						hPrevInstance:DWORD,\
+						lpCmdLine:DWORD,\
+						nShowCmd:DWORD
