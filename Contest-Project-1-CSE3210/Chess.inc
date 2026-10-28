@@ -10,6 +10,8 @@ INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/
 
 ;Global Constants
 NULL EQU 0
+FALSE EQU 0
+TRUE EQU 1
 
 ; WndProc Codes
 WP_CREATE EQU 0
@@ -28,6 +30,11 @@ WndProc PROTO			hWnd:DWORD,\
 GetClassNameA PROTO,	hWnd:DWORD,\
 						lpClassName:DWORD,\
 						nMaxCount:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-adjustwindowrect
+AdjustWindowRect PROTO,	lpRect:DWORD,\
+						dwStyle:DWORD,\
+						bMenu:BYTE				; BOOL
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
 CreateWindowExA PROTO,	dwExStyle:DWORD,\
@@ -54,6 +61,7 @@ DestroyWindow PROTO,	hWnd:DWORD
 
 ExitProcess PROTO,		dwExitCode:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclientrect
 GetClientRect PROTO,	hWnd:DWORD,\
 						lpRect:DWORD
 
@@ -77,6 +85,7 @@ RegisterClassExA PROTO,	wndClassPTR:DWORD
 ShowWindow PROTO,		hWnd:DWORD,\
 						nCmdShow:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-winmain
 WinMain PROTO,			hInstance:DWORD,\
 						hPrevInstance:DWORD,\
 						lpCmdLine:DWORD,\

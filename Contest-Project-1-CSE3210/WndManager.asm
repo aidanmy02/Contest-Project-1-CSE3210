@@ -13,6 +13,10 @@ hWnd DWORD ?			; Output Param
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
 
+; Window 
+wndWidth DWORD ?
+wndHeight DWORD ?
+
 .data
 ;TODO: For tests remove later
 buffer BYTE 128 DUP(0)
@@ -35,10 +39,18 @@ WNDCLASSEXA STRUCT
 	hIconSm DWORD ?
 WNDCLASSEXA ENDS
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-rect
+RECT STRUCT
+	left DWORD ?
+	top DWORD ?
+	right DWORD ?
+	bottom DWORD ?
+RECT ENDS
+
 ; Params for WNDCLASSEXA Struct
 className BYTE "Wnd",0
 
-; Instance of WNDCLASSEXA
+; Params for RegisterClassA
 WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						CS_NOCLOSE,\			; style
 						OFFSET WndProc,\		; lpfnWndProc
@@ -50,7 +62,14 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						COLOR_WINDOW + 1,\		; hbrBackground
 						NULL,\					; lpszMenuName
 						OFFSET className,\		; lpszClassName
-						NULL  >					; hIconSm
+						NULL	>				; hIconSm
+
+; Params for AdjustWindowRect
+
+defaultRect RECT	<	0,\						; left
+						0,\						; top
+						wndLen,\					; right
+						wndLen		>				; bottom
 
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
