@@ -82,6 +82,7 @@ modHandleErrMsg BYTE "GetModuleHandleA failed", 0
 loadCursorErrMsg BYTE "LoadCursorA failed", 0
 regClassErrMsg BYTE "RegisterClassExA failed", 0
 adjRectErrMsg BYTE "AdjustWindowRect failed", 0
+getDCErrMsg BYTE "GetDC failed", 0
 
 ; Codes
 ; Error Codes
@@ -90,6 +91,7 @@ ERR_GET_HANDLE EQU 1
 ERR_CURSOR EQU 2
 ERR_REG_CLASS EQU 3
 ERR_ADJRECT EQU 4
+ERR_GETDC EQU 5
 
 ; WNDCLASSEXA Codes
 CS_NOCLOSE EQU 0200H	; style				; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
@@ -251,7 +253,17 @@ initWnd PROC
 initWnd ENDP
 
 paintSquare PROC
+	INVOKE GetDC,			hWnd					; hWnd
 	
+	CMP eax, NULL
+	JNZ gotDC
+
+	MOV eax, ERR_GETDC
+	PUSH eax
+	CALL errWnd
+
+	gotDC:
+
 	RET
 paintSquare ENDP
 
@@ -275,6 +287,8 @@ errWnd PROC
 	JZ regClassErr
 	CMP eax, ERR_ADJRECT
 	JZ adjRectErr
+	CMP eax, ERR_GETDC
+	JZ getDCErr
 	JMP errDefault
 
 	createErr:
@@ -295,6 +309,10 @@ errWnd PROC
 
 	adjRectErr:
 	PUSH OFFSET adjRectErrMsg
+	JMP postMsg
+
+	getDCErr:
+	PUSH OFFSET getDCErrMsg
 	JMP postMsg
 
 	errDefault:

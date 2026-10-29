@@ -18,7 +18,6 @@ WP_INIT EQU 0
 WP_PAINT EQU 1
 WP_DESTROY EQU 2
 
-
 ; BoardProc Codes
 BP_INIT EQU 0
 
@@ -88,6 +87,9 @@ ExitProcess PROTO,		dwExitCode:DWORD
 GetClientRect PROTO,	hWnd:DWORD,\
 						lpRect:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdc
+GetDC PROTO,			hWnd:DWORD
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
 GetModuleHandleA PROTO,	lpModuleName:DWORD
 
@@ -108,6 +110,8 @@ RegisterClassExA PROTO,	wndClassPTR:DWORD
 ShowWindow PROTO,		hWnd:DWORD,\
 						nCmdShow:DWORD
 
+
+; TODO: May not use; remove if not necessary
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-winmain
 WinMain PROTO,			hInstance:DWORD,\
 						hPrevInstance:DWORD,\

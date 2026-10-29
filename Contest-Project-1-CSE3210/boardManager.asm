@@ -33,8 +33,10 @@ BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD
 BoardProc ENDP
 
 initBoard PROC
-	
-
+	INVOKE WndProc,		NULL,\			; hWnd
+						WP_PAINT,\		; uMsg
+						NULL,\
+						NULL
 	RET
 initBoard ENDP
 
