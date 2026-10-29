@@ -45,7 +45,8 @@ WndProc PROTO			hWnd:DWORD,\
 
 BoardProc PROTO			bpUMsg:DWORD,\
 						col:DWORD,\
-						row:DWORD
+						row:DWORD,\
+						peice:DWORD
 
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later

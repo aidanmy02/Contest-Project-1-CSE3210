@@ -19,7 +19,7 @@ BOARD STRUCT
 BOARD ENDS
 
 .code
-BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD
+BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD, piece:DWORD
 	MOV eax, bpUMsg
 	CMP bpUMsg, BP_INIT
 	JZ bpInit

@@ -73,11 +73,14 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 clientLen EQU 400
 defaultRect RECT	<	0,\						; left
 						0,\						; top
-						clientlen,\					; right
-						clientLen		>				; bottom
+						clientlen,\				; right
+						clientLen		>		; bottom
 
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
+
+; Initialize PAINTSTRUCT
+pStruct PAINTSTRUCT	<>
 
 ; Error Messages for errWnd
 errTitle BYTE "Error", 0
@@ -251,7 +254,16 @@ initWnd PROC
 	RET
 initWnd ENDP
 
+; Paints a square on the board
 paintSquare PROC
+	PUSH ebp
+	MOV ebp, esp
+
+	MOV ebx, [ebp + 8]		; background color code
+	MOV ecx, [ebp + 12]		; peice
+	MOV edx, [ebp + 16]		; RECT structure containing window coords
+
+	; Gets device context
 	INVOKE GetDC,			hWnd					; hWnd
 	
 	; Check if device context was obtained
@@ -265,7 +277,9 @@ paintSquare PROC
 
 	gotDC:
 	MOV hdc, eax
-	RET
+
+	POP ebp
+	RET 12
 paintSquare ENDP
 
 ; Creates error popup window
