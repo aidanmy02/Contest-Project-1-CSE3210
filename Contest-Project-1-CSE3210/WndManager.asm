@@ -84,6 +84,7 @@ createErrMsg BYTE "CreateWindowExA failed", 0
 modHandleErrMsg BYTE "GetModuleHandleA failed", 0
 loadCursorErrMsg BYTE "LoadCursorA failed", 0
 regClassErrMsg BYTE "RegisterClassExA failed", 0
+adjRectErrMsg BYTE "AdjustWindowRect failed", 0
 
 ; Codes
 ; Error Codes
@@ -91,6 +92,7 @@ ERR_CREATE EQU 0
 ERR_GET_HANDLE EQU 1
 ERR_CURSOR EQU 2
 ERR_REG_CLASS EQU 3
+ERR_ADJRECT EQU 4
 
 ; WNDCLASSEXA Codes
 CS_NOCLOSE EQU 0200H	; style				; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
@@ -196,6 +198,16 @@ createWnd PROC
 							WS_OVERLAPPEDWINDOW,\
 							FALSE
 	
+	; Check if window dimensions were received
+	CMP eax, NULL
+	JNZ windowAdjusted
+
+	; AdjustWindowRect failed
+	MOV eax, ERR_ADJRECT
+	PUSH eax
+	CALL errWnd
+
+	windowAdjusted:
 	MOV eax, defaultRect.right
 	SUB eax, defaultRect.left
 	MOV wndWidth, eax
@@ -253,26 +265,28 @@ errWnd PROC
 	JZ cursorErr
 	CMP eax, ERR_REG_CLASS
 	JZ regClassErr
+	CMP eax, ERR_ADJRECT
+	JZ adjRectErr
 	JMP errDefault
 
 	createErr:
 	PUSH OFFSET createErrMsg
-	POP errMsg
 	JMP postMsg
 
 	getHandleErr:
 	PUSH OFFSET modHandleErrMsg
-	POP errMsg
 	JMP postMsg
 
 	cursorErr:
 	PUSH OFFSET loadCursorErrMsg
-	POP errMsg
 	JMP postMsg
 
 	regClassErr:
 	PUSH OFFSET regClassErrMsg
-	POP errMsg
+	JMP postMsg
+
+	adjRectErr:
+	PUSH OFFSET adjRectErrMsg
 	JMP postMsg
 
 	errDefault:
@@ -280,6 +294,7 @@ errWnd PROC
 	POP errMsg
 
 	postMsg:
+	POP errMsg
 	INVOKE MessageBoxA,		NULL,\				; hWnd
 							errMsg,\			; lpText
 							ADDR errTitle,\			; lpCaption
