@@ -121,6 +121,8 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Jump to code action
 	CMP eax, WP_INIT
 	JZ wpInit
+	CMP eax, WP_PAINT
+	JZ wpPaint
 	CMP eax, WP_DESTROY
 	JZ wpDestroy
 	JMP wpDefault
@@ -128,6 +130,10 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	wpInit:
 		CALL initWnd
 		MOV eax, 0
+		JMP wpDone
+
+	wpPaint:
+		CALL paintSquare
 		JMP wpDone
 
 	wpDestroy:
@@ -243,6 +249,11 @@ initWnd PROC
 
 	RET
 initWnd ENDP
+
+paintSquare PROC
+	
+	RET
+paintSquare ENDP
 
 ; Creates error popup window
 errWnd PROC
