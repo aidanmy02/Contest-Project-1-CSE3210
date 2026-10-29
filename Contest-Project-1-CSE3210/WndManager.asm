@@ -65,14 +65,11 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						NULL	>				; hIconSm
 
 ; Params for AdjustWindowRect
-
+clientLen EQU 400
 defaultRect RECT	<	0,\						; left
 						0,\						; top
 						clientlen,\					; right
 						clientLen		>				; bottom
-
-; Params for AdjustWindowRect
-clientLen EQU 400
 
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0

@@ -24,6 +24,9 @@
     <MASM Include="WndManager.asm">
       <Filter>Source Files</Filter>
     </MASM>
+    <MASM Include="boardManager.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="Chess.inc">
