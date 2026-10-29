@@ -9,7 +9,7 @@ init PROC
 	MOV ebp, esp
 
 	INVOKE WndProc,	NULL,\				; hWnd
-					WP_CREATE,\			; uMsg
+					WP_INIT,\			; uMsg
 					NULL,\				; wParam
 					NULL				; lParam
 	MOV status, eax

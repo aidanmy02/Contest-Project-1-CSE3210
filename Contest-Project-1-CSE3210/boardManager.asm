@@ -8,9 +8,21 @@ CCOORD STRUCT
 CCOORD ENDS
 
 .code
+BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD
+	MOV eax, bpUMsg
+	CMP bpUMsg, BP_INIT
+	JZ bpInit
+
+	bpInit:
+	JMP bpDone
+
+	bpDone:
+	RET
+BoardProc ENDP
+
 initBoard PROC
 
-RET
+	RET
 initBoard ENDP
 
 END

@@ -14,8 +14,11 @@ FALSE EQU 0
 TRUE EQU 1
 
 ; WndProc Codes
-WP_CREATE EQU 0
+WP_INIT EQU 0
 WP_DESTROY EQU 1
+
+; BoardProc Codes
+BP_INIT EQU 0
 
 ; Subroutine Prototypes
 main PROTO
@@ -24,6 +27,10 @@ WndProc PROTO			hWnd:DWORD,\
 						uMsg:DWORD,\
 						wParam:DWORD,\
 						lParam:DWORD
+
+BoardProc PROTO			bpUMsg:DWORD,\
+						col:DWORD,\
+						row:DWORD
 
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later

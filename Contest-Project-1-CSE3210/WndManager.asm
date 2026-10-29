@@ -119,13 +119,13 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	MOV eax, wpUMsg
 	
 	; Jump to code action
-	CMP eax, WP_CREATE
-	JZ wpCreate
+	CMP eax, WP_INIT
+	JZ wpInit
 	CMP eax, WP_DESTROY
 	JZ wpDestroy
 	JMP wpDefault
 
-	wpCreate:
+	wpInit:
 		CALL initWnd
 		MOV eax, 0
 		JMP wpDone

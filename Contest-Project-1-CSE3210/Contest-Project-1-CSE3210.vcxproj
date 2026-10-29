@@ -147,7 +147,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <MASM Include="boardManager.asm" />
+    <MASM Include="BoardManager.asm" />
     <MASM Include="Init.asm" />
     <MASM Include="main.asm">
       <FileType>Document</FileType>

@@ -24,7 +24,7 @@
     <MASM Include="WndManager.asm">
       <Filter>Source Files</Filter>
     </MASM>
-    <MASM Include="boardManager.asm">
+    <MASM Include="BoardManager.asm">
       <Filter>Source Files</Filter>
     </MASM>
   </ItemGroup>
