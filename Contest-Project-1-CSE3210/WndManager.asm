@@ -68,12 +68,14 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 
 defaultRect RECT	<	0,\						; left
 						0,\						; top
-						wndLen,\					; right
-						wndLen		>				; bottom
+						clientlen,\					; right
+						clientLen		>				; bottom
+
+; Params for AdjustWindowRect
+clientLen EQU 400
 
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
-wndLen EQU 400
 
 ; Error Messages for errWnd
 errTitle BYTE "Error", 0
@@ -190,14 +192,26 @@ createWnd PROC
 	classRegistered:
 	MOV classAtom, eax
 
+	INVOKE AdjustWindowRect,ADDR defaultRect,\
+							WS_OVERLAPPEDWINDOW,\
+							FALSE
+	
+	MOV eax, defaultRect.right
+	SUB eax, defaultRect.left
+	MOV wndWidth, eax
+
+	MOV eax, defaultRect.bottom
+	SUB eax, defaultRect.top
+	MOV wndHeight, eax
+
 	INVOKE CreateWindowExA, NULL,\					; dwExStyle
 							ADDR className,\		; lpClassName
 							ADDR wndName,\			; lpWindowName
 							WS_OVERLAPPEDWINDOW,\	; dwStyle
 							CW_USEDEFAULT,\			; x
 							CW_USEDEFAULT,\			; y
-							wndLen,\				; nWidth
-							wndLen,\				; nHeight
+							wndWidth,\				; nWidth
+							wndHeight,\				; nHeight
 							NULL,\					; hWndParent
 							NULL,\					; hMenu
 							hInstance,\				; hInstance
