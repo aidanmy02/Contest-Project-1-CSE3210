@@ -1,13 +1,6 @@
 INCLUDE Chess.inc
 
-; Structs
-; Chess coordinate
-CCOORD STRUCT
-	col DWORD ?
-	row DWORD ?
-CCOORD ENDS
-
-BOARD STRUCT
+BOARDSTRUCT STRUCT
 	_a BYTE 8 DUP(0)
 	_b BYTE 8 DUP(0)
 	_c BYTE 8 DUP(0)
@@ -16,7 +9,22 @@ BOARD STRUCT
 	_f BYTE 8 DUP(0)
 	_g BYTE 8 DUP(0)
 	_h BYTE 8 DUP(0)
-BOARD ENDS
+BOARDSTRUCT ENDS
+
+; Packages information for changing a square's state in the window
+WNDPACK STRUCT
+	bc BYTE ?		; background color
+	peice BYTE ?	; peice
+	pos COORD <>	; board coordinates
+WNDPACK ENDS
+
+.data
+; Initialize board
+board BOARDSTRUCT <>
+
+; Initialize coord for use as parameter
+PUBLIC pack
+pack WNDPACK <>
 
 .code
 BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD, piece:DWORD
@@ -25,18 +33,11 @@ BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD, piece:DWORD
 	JZ bpInit
 
 	bpInit:
-	CALL initBoard
-	JMP bpDone
-
 	bpDone:
 	RET
 BoardProc ENDP
 
 initBoard PROC
-	INVOKE WndProc,		NULL,\			; hWnd
-						WP_PAINT,\		; uMsg
-						NULL,\
-						NULL
 	RET
 initBoard ENDP
 

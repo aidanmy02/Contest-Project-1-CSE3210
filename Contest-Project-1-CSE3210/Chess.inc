@@ -14,9 +14,8 @@ FALSE EQU 0
 TRUE EQU 1
 
 ; WndProc Codes
-WP_INIT EQU 0
-WP_PAINT EQU 1
-WP_DESTROY EQU 2
+WM_CREATE EQU 1
+WM_DESTROY EQU 2
 
 ; BoardProc Codes
 BP_INIT EQU 0
@@ -34,6 +33,13 @@ BKNIGHT EQU 'n'
 BBISHOP EQU 'b'
 BQUEEN EQU 'q'
 BKING EQU 'k'
+
+; Structs
+; Coordinate
+COORD STRUCT
+	x BYTE ?
+	y BYTE ?
+COORD ENDS
 
 ; Subroutine Prototypes
 main PROTO

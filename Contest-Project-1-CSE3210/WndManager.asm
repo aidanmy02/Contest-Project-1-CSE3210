@@ -113,6 +113,7 @@ WS_OVERLAPPEDWINDOW EQU 00CF0000h	; style		; Source: https://learn.microsoft.com
 CW_USEDEFAULT EQU 80000000h			; x, y		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 
 ; ShowWindow Codes
+SW_NORMAL EQU 1
 SW_SHOWDEFAULT EQU 10
 
 .code
@@ -123,28 +124,26 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	MOV eax, wpUMsg
 	
 	; Jump to code action
-	CMP eax, WP_INIT
-	JZ wpInit
-	CMP eax, WP_PAINT
-	JZ wpPaint
-	CMP eax, WP_DESTROY
+	CMP eax, WM_CREATE
+	JZ wmCreate
+	CMP eax, WM_DESTROY
 	JZ wpDestroy
-	JMP wpDefault
+	JMP wpSys
 
-	wpInit:
+	wmCreate:
+		CMP wpHWnd, NULL
+		JNZ sysCreate
 		CALL initWnd
 		MOV eax, 0
 		JMP wpDone
-
-	wpPaint:
-		CALL paintSquare
-		JMP wpDone
+		sysCreate:
+		JMP wpSys
 
 	wpDestroy:
 		INVOKE DestroyWindow, hWnd			; hWnd
 		JMP wpDone
 
-	wpDefault:
+	wpSys:
 		INVOKE DefWindowProcA,	wpHWnd,\	; hWnd
 								wpUMsg,\	; uMsg
 								wpWParam,\	; wParam
@@ -257,11 +256,6 @@ initWnd ENDP
 ; Paints a square on the board
 paintSquare PROC
 	PUSH ebp
-	MOV ebp, esp
-
-	MOV ebx, [ebp + 8]		; background color code
-	MOV ecx, [ebp + 12]		; peice
-	MOV edx, [ebp + 16]		; RECT structure containing window coords
 
 	; Gets device context
 	INVOKE GetDC,			hWnd					; hWnd

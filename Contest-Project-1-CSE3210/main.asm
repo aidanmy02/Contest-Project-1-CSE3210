@@ -5,7 +5,7 @@ main PROC
 	CALL init
 
 	INVOKE WndProc,	NULL,\				; hWnd
-					WP_DESTROY,\		; uMsg
+					WM_DESTROY,\		; uMsg
 					NULL,\				; wParam
 					NULL				; lParam
 
