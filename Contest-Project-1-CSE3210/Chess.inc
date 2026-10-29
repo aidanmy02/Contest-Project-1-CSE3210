@@ -58,6 +58,10 @@ AdjustWindowRect PROTO,	lpRect:DWORD,\
 						dwStyle:DWORD,\
 						bMenu:BYTE				; BOOL
 
+; Source: https://learn.microsoft.com/en-us/previous-versions/ms961291(v=msdn.10)
+BeginPaint PROTO,		hWnd:DWORD,\
+						lpPaint:DWORD
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
 CreateWindowExA PROTO,	dwExStyle:DWORD,\
 						lpClassName:DWORD,\

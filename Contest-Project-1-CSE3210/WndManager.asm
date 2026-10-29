@@ -25,22 +25,27 @@ RECT STRUCT
 	bottom DWORD ?
 RECT ENDS
 
+; Source: https://learn.microsoft.com/en-us/previous-versions/ms961291(v=msdn.10)
+PAINTSTRUCT STRUCT
+	hdc DWORD ?
+	fErase BYTE ?					; BOOL
+	rcPaint RECT <>					; RECT STRUCT
+	fRestore BYTE NULL				; BOOL, reserved
+	fIncUpdate BYTE NULL			; BOOL, reserved
+	rgbReserved BYTE 32 DUP(NULL)	; reserveD
+PAINTSTRUCT ENDS
+
 .data?
-; Params for WNDCLASSEXA Struct
-hInstance DWORD ?
-
-; Params for RegisterClassExA
-classAtom DWORD ?		; Output Param
-
-; Params for CreateWindowExA
-hWnd DWORD ?			; Output Param
+; Window Attributes
+hInstance DWORD ?		; From GetModuleHandleA
+classAtom DWORD ?		; From RegisterClassA
+hWnd DWORD ?			; From CreateWindowExA
+hdc DWORD ?				; From GetDC
+wndWidth DWORD ?
+wndHeight DWORD ?
 
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
-
-; Window 
-wndWidth DWORD ?
-wndHeight DWORD ?
 
 .data
 ;TODO: For tests remove later
@@ -101,14 +106,8 @@ COLOR_WINDOW EQU 5		; hbrBackground		; Source: https://learn.microsoft.com/en-us
 IDC_ARROW EQU 32512		; lpCursorName		; Source: https://learn.microsoft.com/en-us/windows/win32/menurc/about-cursors
 
 ; CreateWindowExA Codes
-WS_OVERLAPPED EQU 00000000h		; style		; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-WS_CAPTION EQU 00C00000h		;
-WS_SYSMENU EQU 00080000h		;
-WS_THICKFRAME EQU 00040000h		;
-WS_MINIMIZEBOX EQU 00020000h	;
-WS_MAXIMIZEBOX EQU 00010000h	;
-WS_OVERLAPPEDWINDOW EQU 00CF0000h
-CW_USEDEFAULT EQU 80000000h		; x, y		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
+WS_OVERLAPPEDWINDOW EQU 00CF0000h	; style		; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+CW_USEDEFAULT EQU 80000000h			; x, y		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 
 ; ShowWindow Codes
 SW_SHOWDEFAULT EQU 10
@@ -255,15 +254,17 @@ initWnd ENDP
 paintSquare PROC
 	INVOKE GetDC,			hWnd					; hWnd
 	
+	; Check if device context was obtained
 	CMP eax, NULL
 	JNZ gotDC
 
+	; GetDC failed
 	MOV eax, ERR_GETDC
 	PUSH eax
 	CALL errWnd
 
 	gotDC:
-
+	MOV hdc, eax
 	RET
 paintSquare ENDP
 
