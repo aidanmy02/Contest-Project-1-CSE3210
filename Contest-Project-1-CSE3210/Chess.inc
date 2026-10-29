@@ -20,6 +20,20 @@ WP_DESTROY EQU 1
 ; BoardProc Codes
 BP_INIT EQU 0
 
+; Piece Codes
+WPAWN EQU 'P'
+WROOK EQU 'R'
+WKNIGHT EQU 'N'
+WBISHOP EQU 'B'
+WQUEEN EQU 'Q'
+WKING EQU 'K'
+BPAWN EQU 'p'
+BROOK EQU 'r'
+BKNIGHT EQU 'n'
+BBISHOP EQU 'b'
+BQUEEN EQU 'q'
+BKING EQU 'k'
+
 ; Subroutine Prototypes
 main PROTO
 init PROTO
