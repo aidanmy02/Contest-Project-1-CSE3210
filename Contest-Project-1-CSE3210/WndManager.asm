@@ -1,27 +1,5 @@
 INCLUDE Chess.inc
 
-.data?
-; Params for WNDCLASSEXA Struct
-hInstance DWORD ?
-
-; Params for RegisterClassExA
-classAtom DWORD ?		; Output Param
-
-; Params for CreateWindowExA
-hWnd DWORD ?			; Output Param
-
-; Params for MessageBoxA
-errMsg DWORD ?			; Input Param
-
-; Window 
-wndWidth DWORD ?
-wndHeight DWORD ?
-
-.data
-;TODO: For tests remove later
-buffer BYTE 128 DUP(0)
-bufferSize DWORD SIZEOF buffer
-
 ; Structs
 ; Source: http://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
 WNDCLASSEXA STRUCT
@@ -46,6 +24,28 @@ RECT STRUCT
 	right DWORD ?
 	bottom DWORD ?
 RECT ENDS
+
+.data?
+; Params for WNDCLASSEXA Struct
+hInstance DWORD ?
+
+; Params for RegisterClassExA
+classAtom DWORD ?		; Output Param
+
+; Params for CreateWindowExA
+hWnd DWORD ?			; Output Param
+
+; Params for MessageBoxA
+errMsg DWORD ?			; Input Param
+
+; Window 
+wndWidth DWORD ?
+wndHeight DWORD ?
+
+.data
+;TODO: For tests remove later
+buffer BYTE 128 DUP(0)
+bufferSize DWORD SIZEOF buffer
 
 ; Params for WNDCLASSEXA Struct
 className BYTE "Wnd",0
@@ -126,7 +126,7 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	JMP wpDefault
 
 	wpCreate:
-		CALL createWnd
+		CALL initWnd
 		MOV eax, 0
 		JMP wpDone
 
@@ -145,7 +145,7 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 WndProc ENDP
 
 ; Registers window class and creates window
-createWnd PROC
+initWnd PROC
 	; Get instance handle for current module and register window class
 	INVOKE GetModuleHandleA, NULL
 
@@ -242,7 +242,7 @@ createWnd PROC
 							SW_SHOWDEFAULT			; nCmdShow
 
 	RET
-createWnd ENDP
+initWnd ENDP
 
 ; Creates error popup window
 errWnd PROC

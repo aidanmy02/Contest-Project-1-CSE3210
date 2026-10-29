@@ -1,5 +1,6 @@
 INCLUDE Chess.inc
 
+; Structs
 ; Chess coordinate
 CCOORD STRUCT
 	col DWORD ?
