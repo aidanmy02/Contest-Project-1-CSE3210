@@ -90,6 +90,7 @@ defaultRect RECT	<	0,\						; left
 						clientlen,\				; right
 						clientLen		>		; bottom
 
+paintParam PAINTSTRUCT <>
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
 
@@ -207,18 +208,21 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	JMP wpSys
 
 	wpPaint:
-		
+		INVOKE BeginPaint,		hWnd,\			; hWnd
+								ADDR paintParam	; lpPaint
+		INVOKE EndPaint,		hWnd,\			; hWnd
+								ADDR paintParam ; lpPaint
 		JMP wpSys
 
 	wpDestroy:
-		INVOKE DestroyWindow, hWnd			; hWnd
+		INVOKE DestroyWindow,	hWnd			; hWnd
 		JMP wpDone
 
 	wpSys:
-		INVOKE DefWindowProcA,	hWnd,\	; hWnd
-								wpUMsg,\	; uMsg
-								wpWParam,\	; wParam
-								wpLParam	; lParam
+		INVOKE DefWindowProcA,	hWnd,\			; hWnd
+								wpUMsg,\		; uMsg
+								wpWParam,\		; wParam
+								wpLParam		; lParam
 
 	wpDone:
 	RET
@@ -304,7 +308,7 @@ createWnd PROC
 
 	INVOKE ShowWindow,		hWndMain,				; hWnd
 							SW_SHOWDEFAULT			; nCmdShow
-
+	INVOKE UpdateWindow,	hWndMain				; hWnd
 	RET 
 createWnd ENDP
 
