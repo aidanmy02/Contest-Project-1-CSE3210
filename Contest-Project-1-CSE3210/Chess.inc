@@ -17,6 +17,10 @@ TRUE EQU 1
 WM_CREATE EQU 1
 WM_DESTROY EQU 2
 
+; ShowWindow Codes
+SW_NORMAL EQU 1
+SW_SHOWDEFAULT EQU 10
+
 ; BoardProc Codes
 BP_INIT EQU 0
 
@@ -50,12 +54,6 @@ BoardProc PROTO			bpUMsg:DWORD,\
 main PROTO
 
 init PROTO
-
-; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-WndProc PROTO			hWnd:DWORD,\
-						uMsg:DWORD,\
-						wParam:DWORD,\
-						lParam:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-winmain
 ;		  https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues

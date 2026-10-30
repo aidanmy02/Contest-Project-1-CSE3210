@@ -1,5 +1,7 @@
 INCLUDE Chess.inc
 
+WndProc PROTO, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
+
 ; Structs
 ; Source: http://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
 WNDCLASSEXA STRUCT
@@ -37,7 +39,6 @@ PAINTSTRUCT ENDS
 
 .data?
 ; Window Attributes
-hInstance DWORD ?		; From GetModuleHandleA
 classAtom DWORD ?		; From RegisterClassA
 hWnd DWORD ?			; From CreateWindowExA
 hdc DWORD ?				; From GetDC
@@ -61,7 +62,7 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						OFFSET WndProc,\		; lpfnWndProc
 						NULL,\					; cbClsExtra
 						NULL,\					; cbWndExtra
-						hInstance,\				; hInstance
+						NULL,\					; hInstance
 						NULL,\					; hIcon
 						NULL,\					; hCursor
 						COLOR_WINDOW + 1,\		; hbrBackground
@@ -112,18 +113,27 @@ IDC_ARROW EQU 32512		; lpCursorName		; Source: https://learn.microsoft.com/en-us
 WS_OVERLAPPEDWINDOW EQU 00CF0000h	; style		; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 CW_USEDEFAULT EQU 80000000h			; x, y		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
 
-; ShowWindow Codes
-SW_NORMAL EQU 1
-SW_SHOWDEFAULT EQU 10
-
 .code
 ; Implementation of WinMain for message passing to window
-WinMain PROC, whInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DWORD
+WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DWORD
+	MOV eax, hPrevInstance
+	CMP eax, NULL
+	JNZ msgLoop
+	
+	PUSH hInstance
+	POP WndClass.hInstance
+	CALL regWnd
 
+	msgLoop:
+	INVOKE WndProc,	NULL,\				; hWnd
+					WM_DESTROY,\		; uMsg
+					NULL,\				; wParam
+					NULL				; lParam
 	RET
 WinMain ENDP
 
 ; Implementation of WndProc for message processing
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Get WP code
 	MOV eax, wpUMsg
@@ -138,7 +148,6 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	wmCreate:
 		CMP wpHWnd, NULL
 		JNZ sysCreate
-		CALL initWnd
 		MOV eax, 0
 		JMP wpDone
 		sysCreate:
@@ -159,23 +168,7 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 WndProc ENDP
 
 ; Registers window class and creates window
-initWnd PROC
-	; Get instance handle for current module and register window class
-	INVOKE GetModuleHandleA, NULL
-
-	; Check if module handle was successfully obtained
-	CMP eax, NULL
-	JNZ gotModuleHandle
-
-	; GetModuleHandleA failed
-	MOV eax, ERR_GET_HANDLE
-	PUSH eax
-	CALL errWnd
-
-	gotModuleHandle:
-	MOV hInstance, eax
-	MOV WndClass.hInstance, eax
-
+regWnd PROC
 	INVOKE LoadCursorA, NULL,\					; hInstance
 						IDC_ARROW				; lpCursorName
 
@@ -237,7 +230,7 @@ initWnd PROC
 							wndHeight,\				; nHeight
 							NULL,\					; hWndParent
 							NULL,\					; hMenu
-							hInstance,\				; hInstance
+							WndClass.hInstance,\	; hInstance
 							NULL					; lpParam
 	
 	; Check if window was successfully created
@@ -255,8 +248,8 @@ initWnd PROC
 	INVOKE ShowWindow,		hWnd,					; hWnd
 							SW_SHOWDEFAULT			; nCmdShow
 
-	RET
-initWnd ENDP
+	RET 
+regWnd ENDP
 
 ; Paints a square on the board
 paintSquare PROC

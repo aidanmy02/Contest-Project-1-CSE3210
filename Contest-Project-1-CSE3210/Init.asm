@@ -8,10 +8,12 @@ init PROC
 	PUSH ebp
 	MOV ebp, esp
 
-	INVOKE WndProc,		NULL,\				; hWnd
-						WM_CREATE,\			; uMsg
-						NULL,\				; wParam
-						NULL				; lParam
+	INVOKE GetModuleHandleA, NULL
+
+	INVOKE WinMain,		eax,\				; hInstance
+						NULL,\				; hPrevInstance
+						NULL,\				; lpCmdLine
+						SW_SHOWDEFAULT		; nShowCmd
 	MOV status, eax
 
 	COMMENT @
