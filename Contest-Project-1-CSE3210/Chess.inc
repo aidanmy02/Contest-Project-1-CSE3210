@@ -113,9 +113,9 @@ GetClientRect PROTO,	hWnd:DWORD,\
 GetDC PROTO,			hWnd:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
-GetMessage PROTO,		lpMsg:DWORD,\
+GetMessageA PROTO,		lpMsg:DWORD,\
 						hWnd:DWORD,\
-						uMsgFilterMin:DWORD,\
+						wMsgFilterMin:DWORD,\
 						wMsgFilterMax:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea

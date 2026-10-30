@@ -37,10 +37,20 @@ PAINTSTRUCT STRUCT
 	rgbReserved BYTE 32 DUP(NULL)	; reserveD
 PAINTSTRUCT ENDS
 
+MSGSTRUCT STRUCT
+	hWnd DWORD ?
+	message DWORD ?
+	wParam DWORD ?
+	lParam DWORD ?
+	time DWORD ?
+	point DWORD ?
+	lPrivate DWORD ?
+MSGSTRUCT ENDS
+
 .data?
 ; Window Attributes
 classAtom DWORD ?		; From RegisterClassA
-hWnd DWORD ?			; From CreateWindowExA
+hWndMain DWORD ?		; From CreateWindowExA
 hdc DWORD ?				; From GetDC
 wndWidth DWORD ?
 wndHeight DWORD ?
@@ -80,6 +90,9 @@ defaultRect RECT	<	0,\						; left
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
 
+; Params for GetMessage
+msg MSGSTRUCT <>
+
 ; Initialize PAINTSTRUCT
 pStruct PAINTSTRUCT	<>
 
@@ -101,6 +114,7 @@ ERR_CURSOR EQU 2
 ERR_REGCLASS EQU 3
 ERR_ADJRECT EQU 4
 ERR_GETDC EQU 5
+ERR_GETMSG EQU 6
 
 ; WNDCLASSEXA Codes
 CS_NOCLOSE EQU 0200H	; style				; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
@@ -133,23 +147,40 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 
 	gothandle:
 	MOV WndClass.hInstance, eax
-	CALL regWnd
-
+	CALL createWnd
 
 	msgLoop:
+	INVOKE GetMessageA,	ADDR msg,\			; lpMsg
+						hWndMain,\			; hWnd
+						NULL,\				; wMsgFilterMin
+						NULL				; wMsgFilterMax
 
+	; Check for WM_QUIT message
+	CMP eax, 0
+	JZ endLoop
+	; Check for error
+	CMP eax, -1
+	JNZ dispatchMsg
 
+	; GetMessage failed
+	MOV eax, ERR_GETMSG
+	PUSH eax
+	CALL errWnd
 
-	INVOKE WndProc,	NULL,\				; hWnd
-					WM_DESTROY,\		; uMsg
-					NULL,\				; wParam
-					NULL				; lParam
+	dispatchMsg:
+
+	endLoop:
+	INVOKE WndProc,		NULL,\				; hWnd
+						WM_DESTROY,\		; uMsg
+						NULL,\				; wParam
+						NULL				; lParam
+	
 	RET
 WinMain ENDP
 
 ; Implementation of WndProc for message processing
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
+WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Get WP code
 	MOV eax, wpUMsg
 	
@@ -163,7 +194,7 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		JMP wpDone
 
 	wpSys:
-		INVOKE DefWindowProcA,	wpHWnd,\	; hWnd
+		INVOKE DefWindowProcA,	hWnd,\	; hWnd
 								wpUMsg,\	; uMsg
 								wpWParam,\	; wParam
 								wpLParam	; lParam
@@ -173,7 +204,7 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 WndProc ENDP
 
 ; Registers window class and creates window
-regWnd PROC
+createWnd PROC
 	INVOKE LoadCursorA, NULL,\					; hInstance
 						IDC_ARROW				; lpCursorName
 
@@ -248,20 +279,20 @@ regWnd PROC
 	CALL errWnd
 
 	windowCreated:
-	MOV hWnd, eax
+	MOV hWndMain, eax
 
-	INVOKE ShowWindow,		hWnd,					; hWnd
+	INVOKE ShowWindow,		hWndMain,				; hWnd
 							SW_SHOWDEFAULT			; nCmdShow
 
 	RET 
-regWnd ENDP
+createWnd ENDP
 
 ; Paints a square on the board
 paintSquare PROC
 	PUSH ebp
 
 	; Gets device context
-	INVOKE GetDC,			hWnd					; hWnd
+	INVOKE GetDC,			hWndMain				; hWnd
 	
 	; Check if device context was obtained
 	CMP eax, NULL
