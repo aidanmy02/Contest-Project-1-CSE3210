@@ -47,6 +47,12 @@ MSGSTRUCT STRUCT
 	lPrivate DWORD ?
 MSGSTRUCT ENDS
 
+COLORSTRUCT STRUCT
+	r DWORD ?
+	g DWORD ?
+	b DWORD ?
+COLORSTRUCT ENDS
+
 .data?
 ; Window Attributes
 classAtom DWORD ?		; From RegisterClassA
@@ -57,6 +63,8 @@ wndHeight DWORD ?
 hHeap DWORD ?
 hThread DWORD ?
 pid DWORD ?
+wSqr DWORD ?
+bSqr DWORD ?
 
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
@@ -90,15 +98,19 @@ defaultRect RECT	<	0,\						; left
 						clientlen,\				; right
 						clientLen		>		; bottom
 
+; For painting
+updateRect RECT	<0,0,50,50>
+wSqrColor DWORD 0FFCFCFh
+bSqrColor DWORD 292817h
+
+; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
+
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
 
 ; Params for GetMessage
 msg MSGSTRUCT <>
-
-; Initialize PAINTSTRUCT
-pStruct PAINTSTRUCT	<>
 
 ; Error Messages for errWnd
 errTitle BYTE "Error", 0
@@ -222,10 +234,13 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		beganPaint:
 		MOV hdc, eax
+		INVOKE CreateSolidBrush,bSqrColor
+		MOV bSqr, eax
+
+		INVOKE FillRect,		hdc, ADDR updateRect, bSqr
+
 		INVOKE EndPaint,		hWnd,\			; hWnd
 								ADDR paintParam ; lpPaint
-		JMP wpSys
-
 	wpDestroy:
 		INVOKE DestroyWindow,	hWnd			; hWnd
 		JMP wpDone

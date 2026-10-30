@@ -7,6 +7,7 @@ OPTION PROC:PRIVATE
 ; Windows SDK Libraries
 INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/cpp/assembler/masm/includelib-masm?view=msvc-170
 						;			https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
+INCLUDELIB Gdi32.lib	; Source:	https://learn.microsoft.com/en-us/windows/win32/gdi/windows-gdi
 
 ;Global Constants
 NULL EQU 0
@@ -88,6 +89,9 @@ AdjustWindowRect PROTO,	lpRect:DWORD,\
 BeginPaint PROTO,		hWnd:DWORD,\
 						lpPaint:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createsolidbrush
+CreateSolidBrush PROTO,	color:DWORD
+
 ; Sources: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
 ;		   https://learn.microsoft.com/en-us/windows/win32/procthread/creating-threads
 CreateThread PROTO,		lpThreadAttributes:DWORD,\
@@ -132,6 +136,11 @@ ExitThread PROTO,		dwExitCode:DWORD
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
 EndPaint PROTO,			hWnd:DWORD,\
 						lpPaint:DWORD			; pointer to PAINTSTRUCT
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-fillrect
+FillRect PROTO,			hDC:DWORD,\
+						lprc:DWORD,\			; pointer to RECT
+						hbr:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclientrect
 GetClientRect PROTO,	hWnd:DWORD,\
