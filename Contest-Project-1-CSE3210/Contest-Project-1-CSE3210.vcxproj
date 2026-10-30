@@ -152,6 +152,7 @@
     <MASM Include="main.asm">
       <FileType>Document</FileType>
     </MASM>
+    <MASM Include="Semaphore.asm" />
     <MASM Include="WndManager.asm" />
   </ItemGroup>
   <ItemGroup>
