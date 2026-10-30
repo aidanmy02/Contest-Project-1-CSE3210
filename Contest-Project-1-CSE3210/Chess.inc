@@ -5,6 +5,7 @@
 OPTION PROC:PRIVATE
 
 ; Windows SDK Libraries
+INCLUDELIB Kernel32.lib
 INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/cpp/assembler/masm/includelib-masm?view=msvc-170
 						;			https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
 INCLUDELIB Gdi32.lib	; Source:	https://learn.microsoft.com/en-us/windows/win32/gdi/windows-gdi
@@ -193,4 +194,8 @@ RegisterClassExA PROTO,	wndClassPTR:DWORD
 ShowWindow PROTO,		hWnd:DWORD,\
 						nCmdShow:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
+Sleep PROTO,			dwMilliseconds:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow
 UpdateWindow PROTO,	hWnd:DWORD
