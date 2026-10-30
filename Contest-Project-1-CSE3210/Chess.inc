@@ -13,16 +13,20 @@ NULL EQU 0
 FALSE EQU 0
 TRUE EQU 1
 
+; CODES
 ; WndProc Codes
 WM_CREATE EQU 1
 WM_DESTROY EQU 2
 
+; BoardProc Codes
+BP_INIT EQU 0
+
+; HeapAlloc Codes
+HEAP_ZERO_MEMORY EQU 8
+
 ; ShowWindow Codes
 SW_NORMAL EQU 1
 SW_SHOWDEFAULT EQU 10
-
-; BoardProc Codes
-BP_INIT EQU 0
 
 ; Piece Codes
 WPAWN EQU 'P'
@@ -54,7 +58,7 @@ MOVESTRUCT ENDS
 
 EXTERNDEF move:MOVESTRUCT
 ; Subroutine Prototypes
-BoardProc PROTO			movePtr:DWORD
+BoardProc PROTO
 
 main PROTO
 
@@ -81,6 +85,14 @@ AdjustWindowRect PROTO,	lpRect:DWORD,\
 ; Source: https://learn.microsoft.com/en-us/previous-versions/ms961291(v=msdn.10)
 BeginPaint PROTO,		hWnd:DWORD,\
 						lpPaint:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
+CreateThread PROTO,		lpThreadAttributes:DWORD,\
+						dwStackSize:DWORD,\
+						lpStartAddress:DWORD,\
+						lpParameter:DWORD,\
+						dwCreationFlags:DWORD,\
+						lpThreadId:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
 CreateWindowExA PROTO,	dwExStyle:DWORD,\
@@ -125,6 +137,16 @@ GetMessageA PROTO,		lpMsg:DWORD,\
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
 GetModuleHandleA PROTO,	lpModuleName:DWORD
+
+; TODO: remove
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-getprocessheap
+GetProcessHeap PROTO
+
+; TODO: remove
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/heapapi/nf-heapapi-heapalloc
+HeapAlloc PROTO,		hHeap:DWORD,\
+						dwFlags:DWORD,\
+						dwBytes:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursora
 LoadCursorA PROTO,		hInstance:DWORD,\

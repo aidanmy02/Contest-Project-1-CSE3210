@@ -54,6 +54,9 @@ hWndMain DWORD ?		; From CreateWindowExA
 hdc DWORD ?				; From GetDC
 wndWidth DWORD ?
 wndHeight DWORD ?
+hHeap DWORD ?
+hThread DWORD ?
+pid DWORD ?
 
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
@@ -150,13 +153,20 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 	MOV WndClass.hInstance, eax
 	CALL createWnd
 
-	INVOKE BoardProc,	ADDR move
-
+	MOV move.uMsg, BP_INIT
+	INVOKE CreateThread,	NULL,\				; lpThreadAttributes
+							NULL,\				; dwStackSize
+							ADDR BoardProc,\	; lpStartAddress
+							NULL,\				; lpParameter
+							NULL,\				; dwCreationFlags
+							ADDR pid			; lpThreadId
+	MOV hThread, eax
+	
 	msgLoop:
-	INVOKE GetMessageA,	ADDR msg,\			; lpMsg
-						hWndMain,\			; hWnd
-						NULL,\				; wMsgFilterMin
-						NULL				; wMsgFilterMax
+	INVOKE GetMessageA,		ADDR msg,\			; lpMsg
+							hWndMain,\			; hWnd
+							NULL,\				; wMsgFilterMin
+							NULL				; wMsgFilterMax
 	
 	; Check for WM_QUIT message
 	CMP eax, 0

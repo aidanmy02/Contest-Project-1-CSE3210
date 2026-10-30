@@ -19,7 +19,9 @@ board BOARDSTRUCT <>
 move MOVESTRUCT <>
 
 .code
-BoardProc PROC, movePtr:DWORD
+BoardProc PROC
+	MOV eax, move.uMsg
+	CMP eax, BP_INIT
 	JZ bpInit
 
 	bpInit:
@@ -29,6 +31,7 @@ BoardProc PROC, movePtr:DWORD
 BoardProc ENDP
 
 initBoard PROC
+
 	RET
 initBoard ENDP
 
