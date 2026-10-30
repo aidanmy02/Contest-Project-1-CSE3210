@@ -115,6 +115,7 @@ ERR_REGCLASS EQU 3
 ERR_ADJRECT EQU 4
 ERR_GETDC EQU 5
 ERR_GETMSG EQU 6
+ERR_DISPMSG EQU 7
 
 ; WNDCLASSEXA Codes
 CS_NOCLOSE EQU 0200H	; style				; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
@@ -145,16 +146,18 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 	PUSH eax
 	CALL errWnd
 
-	gothandle:
+	gotHandle:
 	MOV WndClass.hInstance, eax
 	CALL createWnd
+
+	INVOKE BoardProc,	ADDR move
 
 	msgLoop:
 	INVOKE GetMessageA,	ADDR msg,\			; lpMsg
 						hWndMain,\			; hWnd
 						NULL,\				; wMsgFilterMin
 						NULL				; wMsgFilterMax
-
+	
 	; Check for WM_QUIT message
 	CMP eax, 0
 	JZ endLoop
@@ -168,6 +171,8 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 	CALL errWnd
 
 	dispatchMsg:
+	INVOKE DispatchMessageA, ADDR msg		; lpMsg
+	JMP msgLoop
 
 	endLoop:
 	INVOKE WndProc,		NULL,\				; hWnd

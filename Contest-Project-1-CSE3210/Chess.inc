@@ -40,16 +40,21 @@ BKING EQU 'k'
 
 ; Structs
 ; Coordinate
-COORD STRUCT
+COORDSTRUCT STRUCT
 	x BYTE ?
 	y BYTE ?
-COORD ENDS
+COORDSTRUCT ENDS
 
+; Move
+MOVESTRUCT STRUCT
+	uMsg DWORD ?
+	coord COORDSTRUCT <>
+	piece DWORD ?
+MOVESTRUCT ENDS
+
+EXTERNDEF move:MOVESTRUCT
 ; Subroutine Prototypes
-BoardProc PROTO			bpUMsg:DWORD,\
-						col:DWORD,\
-						row:DWORD,\
-						peice:DWORD
+BoardProc PROTO			movePtr:DWORD
 
 main PROTO
 
@@ -101,7 +106,7 @@ DefWindowProcA PROTO,	hWnd:DWORD,\
 DestroyWindow PROTO,	hWnd:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
-DispatchMessage PROTO,	lpMsg:DWORD
+DispatchMessageA PROTO,	lpMsg:DWORD
 
 ExitProcess PROTO,		dwExitCode:DWORD
 

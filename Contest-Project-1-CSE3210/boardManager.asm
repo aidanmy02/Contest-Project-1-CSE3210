@@ -11,28 +11,19 @@ BOARDSTRUCT STRUCT
 	_h BYTE 8 DUP(0)
 BOARDSTRUCT ENDS
 
-; Packages information for changing a square's state in the window
-WNDPACK STRUCT
-	bc BYTE ?		; background color
-	peice BYTE ?	; peice
-	pos COORD <>	; board coordinates
-WNDPACK ENDS
-
 .data
 ; Initialize board
 board BOARDSTRUCT <>
 
-; Initialize coord for use as parameter
-PUBLIC pack
-pack WNDPACK <>
+; For message passing
+move MOVESTRUCT <>
 
 .code
-BoardProc PROC, bpUMsg:DWORD, col:DWORD, row:DWORD, piece:DWORD
-	MOV eax, bpUMsg
-	CMP bpUMsg, BP_INIT
+BoardProc PROC, movePtr:DWORD
 	JZ bpInit
 
 	bpInit:
+	CALL initBoard
 	bpDone:
 	RET
 BoardProc ENDP
