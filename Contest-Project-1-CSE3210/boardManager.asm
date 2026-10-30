@@ -23,7 +23,7 @@ BoardProc PROC
 	MOV eax, move.uMsg
 	CMP eax, BP_INIT
 	JZ bpInit
-
+	
 	bpInit:
 	CALL initBoard
 	INVOKE ExitThread,	NULL

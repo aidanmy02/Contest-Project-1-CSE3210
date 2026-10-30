@@ -108,7 +108,7 @@ modHandleErrMsg BYTE "GetModuleHandleA failed", 0
 loadCursorErrMsg BYTE "LoadCursorA failed", 0
 regClassErrMsg BYTE "RegisterClassExA failed", 0
 adjRectErrMsg BYTE "AdjustWindowRect failed", 0
-getDCErrMsg BYTE "GetDC failed", 0
+beginPaintErrMsg BYTE "BeginPaint failed", 0
 
 ; Codes
 ; Error Codes
@@ -117,7 +117,7 @@ ERR_GETHANDLE EQU 1
 ERR_CURSOR EQU 2
 ERR_REGCLASS EQU 3
 ERR_ADJRECT EQU 4
-ERR_GETDC EQU 5
+ERR_BEGINPAINT EQU 5
 ERR_GETMSG EQU 6
 ERR_DISPMSG EQU 7
 
@@ -210,6 +210,18 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	wpPaint:
 		INVOKE BeginPaint,		hWnd,\			; hWnd
 								ADDR paintParam	; lpPaint
+		
+		; Check if BeginPaint returned hdc
+		CMP eax, NULL
+		JNZ beganPaint
+		
+		; BeginPaint failed
+		MOV eax, ERR_BEGINPAINT
+		PUSH eax
+		CALL errWnd
+
+		beganPaint:
+		MOV hdc, eax
 		INVOKE EndPaint,		hWnd,\			; hWnd
 								ADDR paintParam ; lpPaint
 		JMP wpSys
@@ -316,20 +328,7 @@ createWnd ENDP
 paintSquare PROC
 	PUSH ebp
 
-	; Gets device context
-	INVOKE GetDC,			hWndMain				; hWnd
-	
-	; Check if device context was obtained
-	CMP eax, NULL
-	JNZ gotDC
 
-	; GetDC failed
-	MOV eax, ERR_GETDC
-	PUSH eax
-	CALL errWnd
-
-	gotDC:
-	MOV hdc, eax
 
 	POP ebp
 	RET 12
@@ -355,8 +354,8 @@ errWnd PROC
 	JZ regClassErr
 	CMP eax, ERR_ADJRECT
 	JZ adjRectErr
-	CMP eax, ERR_GETDC
-	JZ getDCErr
+	CMP eax, ERR_BEGINPAINT
+	JZ beginPaintErr
 	JMP errDefault
 
 	createErr:
@@ -379,8 +378,8 @@ errWnd PROC
 	PUSH OFFSET adjRectErrMsg
 	JMP postMsg
 
-	getDCErr:
-	PUSH OFFSET getDCErrMsg
+	beginPaintErr:
+	PUSH OFFSET beginPaintErrMsg
 	JMP postMsg
 
 	errDefault:
