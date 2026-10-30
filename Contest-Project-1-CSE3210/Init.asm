@@ -8,6 +8,9 @@ init PROC
 	PUSH ebp
 	MOV ebp, esp
 
+	MOV eax, 0
+	PUSH eax
+	CALL InitSem
 	INVOKE WinMain,		NULL,\				; hInstance
 						NULL,\				; hPrevInstance
 						NULL,\				; lpCmdLine

@@ -74,6 +74,14 @@ WinMain PROTO,			hInstance:DWORD,\
 						lpCmdLine:DWORD,\
 						nShowCmd:DWORD
 
+; Sempaphore function declarations
+InitSem EQU <InitSem@0>
+SignalSem EQU <SignalSem@0>
+WaitSem EQU <WaitSem@0>
+EXTERN InitSem:PROC
+EXTERN SignalSem:PROC
+EXTERN WaitSem:PROC
+
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later
 GetClassNameA PROTO,	hWnd:DWORD,\
