@@ -117,8 +117,13 @@ SW_NORMAL EQU 1
 SW_SHOWDEFAULT EQU 10
 
 .code
-; WndProc for WNDCLASSEXA
-; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+; Implementation of WinMain for message passing to window
+WinMain PROC, whInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DWORD
+
+	RET
+WinMain ENDP
+
+; Implementation of WndProc for message processing
 WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Get WP code
 	MOV eax, wpUMsg

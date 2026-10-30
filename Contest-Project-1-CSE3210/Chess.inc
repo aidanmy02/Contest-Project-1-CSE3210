@@ -42,17 +42,27 @@ COORD STRUCT
 COORD ENDS
 
 ; Subroutine Prototypes
+BoardProc PROTO			bpUMsg:DWORD,\
+						col:DWORD,\
+						row:DWORD,\
+						peice:DWORD
+
 main PROTO
+
 init PROTO
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
 WndProc PROTO			hWnd:DWORD,\
 						uMsg:DWORD,\
 						wParam:DWORD,\
 						lParam:DWORD
 
-BoardProc PROTO			bpUMsg:DWORD,\
-						col:DWORD,\
-						row:DWORD,\
-						peice:DWORD
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-winmain
+;		  https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
+WinMain PROTO,			hInstance:DWORD,\
+						hPrevInstance:DWORD,\
+						lpCmdLine:DWORD,\
+						nShowCmd:DWORD
 
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later
@@ -92,6 +102,9 @@ DefWindowProcA PROTO,	hWnd:DWORD,\
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow
 DestroyWindow PROTO,	hWnd:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
+DispatchMessage PROTO,	lpMsg:DWORD
+
 ExitProcess PROTO,		dwExitCode:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclientrect
@@ -100,6 +113,12 @@ GetClientRect PROTO,	hWnd:DWORD,\
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdc
 GetDC PROTO,			hWnd:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmessage
+GetMessage PROTO,		lpMsg:DWORD,\
+						hWnd:DWORD,\
+						uMsgFilterMin:DWORD,\
+						wMsgFilterMax:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea
 GetModuleHandleA PROTO,	lpModuleName:DWORD
@@ -120,11 +139,3 @@ RegisterClassExA PROTO,	wndClassPTR:DWORD
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 ShowWindow PROTO,		hWnd:DWORD,\
 						nCmdShow:DWORD
-
-
-; TODO: May not use; remove if not necessary
-; Source: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-winmain
-WinMain PROTO,			hInstance:DWORD,\
-						hPrevInstance:DWORD,\
-						lpCmdLine:DWORD,\
-						nShowCmd:DWORD
