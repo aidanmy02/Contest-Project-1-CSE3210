@@ -8,9 +8,7 @@ init PROC
 	PUSH ebp
 	MOV ebp, esp
 
-	INVOKE GetModuleHandleA, NULL
-
-	INVOKE WinMain,		eax,\				; hInstance
+	INVOKE WinMain,		NULL,\				; hInstance
 						NULL,\				; hPrevInstance
 						NULL,\				; lpCmdLine
 						SW_SHOWDEFAULT		; nShowCmd

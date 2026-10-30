@@ -96,9 +96,9 @@ getDCErrMsg BYTE "GetDC failed", 0
 ; Codes
 ; Error Codes
 ERR_CREATE EQU 0
-ERR_GET_HANDLE EQU 1
+ERR_GETHANDLE EQU 1
 ERR_CURSOR EQU 2
-ERR_REG_CLASS EQU 3
+ERR_REGCLASS EQU 3
 ERR_ADJRECT EQU 4
 ERR_GETDC EQU 5
 
@@ -120,11 +120,26 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 	CMP eax, NULL
 	JNZ msgLoop
 	
-	PUSH hInstance
-	POP WndClass.hInstance
+	INVOKE GetModuleHandleA, NULL
+
+	; Check if handle was successfully obtained
+	CMP eax, NULL
+	JNZ gotHandle
+
+	; GetModuleHandleA failed
+	MOV eax, ERR_GETHANDLE
+	PUSH eax
+	CALL errWnd
+
+	gothandle:
+	MOV WndClass.hInstance, eax
 	CALL regWnd
 
+
 	msgLoop:
+
+
+
 	INVOKE WndProc,	NULL,\				; hWnd
 					WM_DESTROY,\		; uMsg
 					NULL,\				; wParam
@@ -139,19 +154,9 @@ WndProc PROC, wpHWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	MOV eax, wpUMsg
 	
 	; Jump to code action
-	CMP eax, WM_CREATE
-	JZ wmCreate
 	CMP eax, WM_DESTROY
 	JZ wpDestroy
 	JMP wpSys
-
-	wmCreate:
-		CMP wpHWnd, NULL
-		JNZ sysCreate
-		MOV eax, 0
-		JMP wpDone
-		sysCreate:
-		JMP wpSys
 
 	wpDestroy:
 		INVOKE DestroyWindow, hWnd			; hWnd
@@ -191,7 +196,7 @@ regWnd PROC
 	JNZ classRegistered
 
 	; RegisterClassExA failed
-	MOV eax, ERR_REG_CLASS
+	MOV eax, ERR_REGCLASS
 	PUSH eax
 	CALL errWnd
 
@@ -286,11 +291,11 @@ errWnd PROC
 	; Identifying error type
 	CMP eax, ERR_CREATE
 	JZ createErr
-	CMP eax, ERR_GET_HANDLE
+	CMP eax, ERR_GETHANDLE
 	JZ getHandleErr
 	CMP eax, ERR_CURSOR
 	JZ cursorErr
-	CMP eax, ERR_REG_CLASS
+	CMP eax, ERR_REGCLASS
 	JZ regClassErr
 	CMP eax, ERR_ADJRECT
 	JZ adjRectErr
