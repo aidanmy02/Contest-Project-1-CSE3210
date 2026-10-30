@@ -26,6 +26,7 @@ BoardProc PROC
 
 	bpInit:
 	CALL initBoard
+	INVOKE ExitThread,	NULL
 	bpDone:
 	RET
 BoardProc ENDP

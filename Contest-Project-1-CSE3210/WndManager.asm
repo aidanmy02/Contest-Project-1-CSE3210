@@ -200,9 +200,15 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	MOV eax, wpUMsg
 	
 	; Jump to code action
+	CMP eax, WM_PAINT
+	JZ wpPaint
 	CMP eax, WM_DESTROY
 	JZ wpDestroy
 	JMP wpSys
+
+	wpPaint:
+		
+		JMP wpSys
 
 	wpDestroy:
 		INVOKE DestroyWindow, hWnd			; hWnd

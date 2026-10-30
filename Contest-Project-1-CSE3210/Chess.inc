@@ -15,8 +15,10 @@ TRUE EQU 1
 
 ; CODES
 ; WndProc Codes
+; Source: https://www.autoitscript.com/autoit3/docs/appendix/WinMsgCodes.htm
 WM_CREATE EQU 1
 WM_DESTROY EQU 2
+WM_PAINT EQU 0Fh
 
 ; BoardProc Codes
 BP_INIT EQU 0
@@ -86,7 +88,8 @@ AdjustWindowRect PROTO,	lpRect:DWORD,\
 BeginPaint PROTO,		hWnd:DWORD,\
 						lpPaint:DWORD
 
-; Source: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
+; Sources: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createthread
+;		   https://learn.microsoft.com/en-us/windows/win32/procthread/creating-threads
 CreateThread PROTO,		lpThreadAttributes:DWORD,\
 						dwStackSize:DWORD,\
 						lpStartAddress:DWORD,\
@@ -120,7 +123,15 @@ DestroyWindow PROTO,	hWnd:DWORD
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessage
 DispatchMessageA PROTO,	lpMsg:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess
 ExitProcess PROTO,		dwExitCode:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitthread
+ExitThread PROTO,		dwExitCode:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-endpaint
+EndPaint PROTO,			hWnd:DWORD,\
+						lpPaint:DWORD			; pointer to PAINTSTRUCT
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclientrect
 GetClientRect PROTO,	hWnd:DWORD,\
