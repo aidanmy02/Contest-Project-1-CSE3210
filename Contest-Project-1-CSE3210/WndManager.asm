@@ -233,6 +233,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		CALL errWnd
 
 		beganPaint:
+		CALL waitSem
 		MOV hdc, eax
 		INVOKE CreateSolidBrush,bSqrColor
 		MOV bSqr, eax
@@ -241,6 +242,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		INVOKE EndPaint,		hWnd,\			; hWnd
 								ADDR paintParam ; lpPaint
+		CALL signalSem
 	wpDestroy:
 		INVOKE DestroyWindow,	hWnd			; hWnd
 		JMP wpDone
@@ -335,6 +337,12 @@ createWnd PROC
 
 	INVOKE ShowWindow,		hWndMain,				; hWnd
 							SW_SHOWDEFAULT			; nCmdShow
+	
+	; Initialize semaphore for painting
+	MOV eax, 0
+	PUSH eax
+	CALL InitSem
+
 	INVOKE UpdateWindow,	hWndMain				; hWnd
 	RET 
 createWnd ENDP

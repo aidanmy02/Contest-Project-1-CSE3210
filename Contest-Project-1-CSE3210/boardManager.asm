@@ -32,7 +32,9 @@ BoardProc PROC
 BoardProc ENDP
 
 initBoard PROC
+	CALL waitSem
 
+	CALL signalSem
 	RET
 initBoard ENDP
 
