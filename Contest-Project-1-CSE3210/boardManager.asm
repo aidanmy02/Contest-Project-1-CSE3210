@@ -76,7 +76,12 @@ InitBoard PROC
 			PUSH eax
 			CALL GetSqrColor
 			MOV move.sqrColor, al
-			; call for paint
+			
+			; Send WM_PAINT message to GetMessage
+			INVOKE PostMessageA,	hWndMain,\			; hWnd
+									WM_PAINT,\			; uMsg
+									ADDR move,\			; wParam
+									NULL				; lParam
 
 			; Unlock mutex
 			CALL signalSem

@@ -62,6 +62,8 @@ MOVESTRUCT STRUCT
 MOVESTRUCT ENDS
 
 EXTERNDEF move:MOVESTRUCT
+EXTERNDEF hWndMain:DWORD
+
 ; Subroutine Prototypes
 BoardProc PROTO
 
@@ -187,6 +189,12 @@ MessageBoxA PROTO,		hWnd:DWORD,\
 						lpTEXT:DWORD,\
 						lpCaption:DWORD,\
 						uType:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-postmessagea
+PostMessageA PROTO,		hWnd:DWORD,\
+						msg:DWORD,\
+						wParam:DWORD,\
+						lParam:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
 RegisterClassExA PROTO,	wndClassPTR:DWORD

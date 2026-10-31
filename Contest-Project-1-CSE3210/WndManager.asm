@@ -93,13 +93,14 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 
 ; Params for AdjustWindowRect
 clientLen EQU 400
+sqrLen EQU 50
 defaultRect RECT	<	0,\						; left
 						0,\						; top
 						clientlen,\				; right
 						clientLen		>		; bottom
 
 ; For painting
-updateRect RECT	<0,0,50,50>
+updateRect RECT	<>
 wSqrColor DWORD 0FFCFCFh
 bSqrColor DWORD 292817h
 
@@ -349,15 +350,24 @@ createWnd PROC
 	RET 
 createWnd ENDP
 
-; Paints a square on the board
-paintSquare PROC
-	PUSH ebp
+translateCoords PROC
+	; Get right and left sides of the square
+	MOVZX eax, move.coord.x
+	MOV ebx, sqrLen
+	MUL ebx
+	MOV updateRect.right, eax
+	SUB eax, sqrLen
+	MOV updateRect.left, eax
 
+	MOVZX eax, move.coord.y
+	MOV ebx, sqrLen
+	MUL ebx
+	MOV updateRect.bottom, eax
+	SUB eax, sqrLen
+	MOV updateRect.top, eax
 
-
-	POP ebp
-	RET 12
-paintSquare ENDP
+	RET
+translateCoords ENDP
 
 ; Creates error popup window
 errWnd PROC
