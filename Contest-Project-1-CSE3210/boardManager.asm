@@ -18,6 +18,9 @@ board BOARDSTRUCT <>
 ; For message passing
 move MOVESTRUCT <>
 
+numCols EQU 8
+numRows EQU 8
+
 .code
 BoardProc PROC
 	MOV eax, move.uMsg
@@ -32,34 +35,53 @@ BoardProc PROC
 BoardProc ENDP
 
 InitBoard PROC
-	XOR ecx, ecx
-	XOR edx, edx
-	MOV eax, SIZEOF board
-	MOV ebx, SIZEOF board._a
-	DIV ebx
-	MOV ecx, eax
+	; Loop over all columns
+	MOV ecx, numCols
 	loopCol:
+		; Lock mutex
 		CALL waitSem
+
+		; Set paint message
 		MOV move.uMsg, WM_PAINT
+
+		; Set x coordinate of board
 		MOV move.coord.x, cx
-		MOV eax, ecx
-		MOV ebx, SIZEOF board
-		MUL ebx
-		MOV esi, eax
-		ADD esi, OFFSET move
+
+		; Get the address of the current column and store in esi
+		MOV eax, numCols
+		MUL ecx
+		MOV esi, OFFSET board
+		ADD esi, eax
+
+		; Save ecx and move inner loop count into ecx
 		PUSH ecx
-		MOV ecx, LENGTHOF board._a
+		MOV ecx, numRows
 		loopRow:
+			; Set y coordinate of board
 			MOV move.coord.y, cx
+
+			; Get the address of the current square on the board
 			MOV edi, ecx
-			MOV eax, [esi + edi]
+			MOV al, [esi + edi]
+
+			; Set the piece at the current square
 			MOV move.piece, al
+
+			; Push x and y coordinates for GetSqrColor
+			MOVZX eax, move.coord.x
+			PUSH eax
+			MOVZX eax, move.coord.y
+			PUSH eax
+			CALL GetSqrColor
 			; call for paint
+
+			; Unlock mutex
 			CALL signalSem
 		loop loopRow
+		
+		; Return outer loop counter to ecx
 		POP ecx
 	loop loopCol
-	CALL signalSem
 	RET
 InitBoard ENDP
 
