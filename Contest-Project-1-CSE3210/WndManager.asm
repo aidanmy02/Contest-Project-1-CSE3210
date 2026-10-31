@@ -100,7 +100,7 @@ defaultRect RECT	<	0,\						; left
 						clientLen		>		; bottom
 
 ; For painting
-updateRect RECT	<>
+updateRect RECT	64 DUP(<>)
 wSqrColor DWORD 0FFCFCFh
 bSqrColor DWORD 292817h
 
@@ -246,9 +246,11 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		JMP wpDone
 
 	wpSqr:
+		MOV esi, wpWParam
+		ADD esi, SIZEOF MOVESTRUCT.uMsg
 		CALL translateCoords
 		INVOKE InvalidateRect,	hWndMain,\			; hWnd
-								ADDR updateRect,\	; lpRect
+								eax,\				; lpRect
 								FALSE				; bErase
 		JMP wpDone
 
@@ -364,24 +366,41 @@ createWnd PROC
 createWnd ENDP
 
 translateCoords PROC
+	; esi holds the address of a COORD in the current MOVESTRUCT
+	; Get the position of the corresponding RECT
+	XOR eax, eax
+	MOV ax, [esi]
+	DEC eax
+	MOV ebx, 8
+	MUL ebx
+	ADD ax, [esi + 2]
+	DEC eax
+	MOV ebx, SIZEOF RECT
+	MUL ebx
+	MOV edi, OFFSET updateRect
+	ADD edi, eax
+
 	; Get right and left sides of the square
-	MOVZX eax, move.coord.x
+	XOR eax, eax
+	MOV ax, [esi]
 	MOV ebx, sqrLen
 	MUL ebx
-	MOV updateRect.right, eax
+	MOV (RECT PTR [edi]).right, eax
 	SUB eax, sqrLen
-	MOV updateRect.left, eax
+	MOV (RECT PTR [edi]).left, eax
 
 	; Flip y coordinate to align with window coord layout
-	MOVZX eax, move.coord.y
+	XOR eax, eax
+	MOV ax, [esi + 2]
 	NEG eax
 	ADD eax, 8
 	MOV ebx, sqrLen
 	MUL ebx
-	MOV updateRect.top, eax
+	MOV (RECT PTR [edi]).top, eax
 	ADD eax, sqrLen
-	MOV updateRect.bottom, eax
+	MOV (RECT PTR [edi]).bottom, eax
 
+	MOV eax, edi
 	RET
 translateCoords ENDP
 

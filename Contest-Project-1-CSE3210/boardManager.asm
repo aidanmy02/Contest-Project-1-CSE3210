@@ -88,7 +88,7 @@ InitBoard PROC
 			; Send WM_PAINT message to GetMessage
 			INVOKE PostMessageA,	hWndMain,\			; hWnd
 									WM_SQR,\			; uMsg
-									[ebx],\				; wParam
+									ebx,\				; wParam
 									NULL				; lParam
 			
 			POP esi
