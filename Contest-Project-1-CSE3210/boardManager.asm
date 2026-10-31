@@ -16,7 +16,7 @@ BOARDSTRUCT ENDS
 board BOARDSTRUCT <>
 
 ; For message passing
-move MOVESTRUCT <>
+move MOVESTRUCT 64 DUP(<>)
 
 numCols EQU 8
 numRows EQU 8
@@ -38,21 +38,15 @@ InitBoard PROC
 	; Loop over all columns
 	MOV ecx, numCols
 	INC ecx
+	XOR ebx, ebx	; Store current MOVESTRUCT in move
 
 	startCol:
 	LOOP loopCol
 	JMP endLoop
 	loopCol:
+		; Copy ecx into edx to move into move.coord.x after semaphore is locked
+		MOV edx, ecx
 
-		; Get the address of the current column and store in esi
-		MOV eax, numCols
-		MUL ecx
-		SUB eax, numCols			; Make zero based index
-		MOV esi, OFFSET board
-		ADD esi, eax
-
-		; Copy ecx into ebx to move into move.coord.x after semaphore is locked
-		MOV ebx, ecx
 		; Save ecx and move inner loop count into ecx
 		PUSH ecx
 		MOV ecx, numRows
@@ -62,20 +56,30 @@ InitBoard PROC
 		LOOP loopRow
 		JMP endRow
 		loopRow:
+			; Get position of current MOVESTRUCT
+			MOV eax, SIZEOF MOVESTRUCT
+			PUSH edx
+			XOR edx, edx
+			MUL ebx
+			MOV esi, OFFSET move
+			ADD esi, eax
+			POP edx
+
+			; Set uMsg
+			MOV eax, WM_SQR
+			MOV [esi], eax
+			ADD esi, SIZEOF MOVESTRUCT.uMsg
 			; Set x coordinate of board
-			MOV move.coord.x, bx
+			MOV [esi], edx		; edx contains col
+			ADD esi, SIZEOF MOVESTRUCT.coord.x
 			; Set y coordinate of board
-			MOV move.coord.y, cx
-			; Set paint message
-			MOV move.uMsg, WM_SQR
+			MOV [esi], ecx		; ecx contains row
+			ADD esi, SIZEOF MOVESTRUCT.coord.y
 
-			; Get the address of the current square on the board
-			MOV edi, ecx
-			DEC edi					; Make zero based index
-			MOV al, [esi + edi]
-
-			; Set the piece at the current square
-			MOV move.piece, al
+			; TODO: implement move.piece
+			MOV al, 0
+			MOV [esi], al
+			ADD esi, SIZEOF MOVESTRUCT.piece
 
 			; Push x and y coordinates for GetSqrColor
 			MOVZX eax, move.coord.x
