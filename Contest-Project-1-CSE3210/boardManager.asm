@@ -1,14 +1,14 @@
 INCLUDE Chess.inc
 
 BOARDSTRUCT STRUCT
-	_a BYTE 8 DUP(0)
-	_b BYTE 8 DUP(0)
+	_a BYTE WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK
+	_b BYTE 8 DUP(WPAWN)
 	_c BYTE 8 DUP(0)
 	_d BYTE 8 DUP(0)
 	_e BYTE 8 DUP(0)
 	_f BYTE 8 DUP(0)
-	_g BYTE 8 DUP(0)
-	_h BYTE 8 DUP(0)
+	_g BYTE 8 DUP(BPAWN)
+	_h BYTE BROOK, BKNIGHT, BBISHOP, BQUEEN, BKING, BBISHOP, BKNIGHT, BROOK
 BOARDSTRUCT ENDS
 
 .data
@@ -25,13 +25,13 @@ BoardProc PROC
 	JZ bpInit
 	
 	bpInit:
-		CALL initBoard
+		CALL InitBoard
 		INVOKE ExitThread,	NULL
 	bpDone:
 	RET
 BoardProc ENDP
 
-initBoard PROC
+InitBoard PROC
 	XOR ecx, ecx
 	XOR edx, edx
 	MOV eax, SIZEOF board
@@ -61,6 +61,30 @@ initBoard PROC
 	loop loopCol
 	CALL signalSem
 	RET
-initBoard ENDP
+InitBoard ENDP
 
+GetSqrColor PROC
+	PUSH ebp
+	MOV ebp, esp
+
+	XOR eax, eax
+
+	MOV eax, [ebp + 8]
+	ADD eax, [ebp + 12]
+	MOV ebx, 2
+	DIV ebx
+
+	CMP edx, 0
+	JZ whiteSqr
+
+	MOV eax, 1
+	JMP gotColor
+
+	whiteSqr:
+	XOR eax, eax
+
+	gotColor:
+	POP ebp
+	RET 8
+GetSqrColor ENDP
 END
