@@ -50,6 +50,7 @@ InitBoard PROC
 		; Get the address of the current column and store in esi
 		MOV eax, numCols
 		MUL ecx
+		SUB eax, numCols			; Make zero based index
 		MOV esi, OFFSET board
 		ADD esi, eax
 
@@ -62,6 +63,7 @@ InitBoard PROC
 
 			; Get the address of the current square on the board
 			MOV edi, ecx
+			DEC edi					; Make zero based index
 			MOV al, [esi + edi]
 
 			; Set the piece at the current square
@@ -73,6 +75,7 @@ InitBoard PROC
 			MOVZX eax, move.coord.y
 			PUSH eax
 			CALL GetSqrColor
+			MOV move.sqrColor, al
 			; call for paint
 
 			; Unlock mutex
@@ -89,16 +92,17 @@ GetSqrColor PROC
 	PUSH ebp
 	MOV ebp, esp
 
-	XOR eax, eax
-
+	; Add coordinates divide by two to check even/odd
 	MOV eax, [ebp + 8]
 	ADD eax, [ebp + 12]
 	MOV ebx, 2
 	DIV ebx
 
+	; If even, then the square is white
 	CMP edx, 0
 	JZ whiteSqr
 
+	; Else, square is black
 	MOV eax, 1
 	JMP gotColor
 
