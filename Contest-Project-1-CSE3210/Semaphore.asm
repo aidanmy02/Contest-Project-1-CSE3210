@@ -32,14 +32,14 @@ InitSem PROC
 	MOV ebp, esp
 
 	; Get sem code and put sem address in esi
-	MOV eax, [ebp + 8]
+	MOV eax, [ebp + 12]
 	CALL GetSem
 	MOV esi, eax
 
 	; Initilize sem with value and set the init boolean to true
-	MOV eax, [ebp + 12]
+	MOV eax, [ebp + 8]
 	MOV [esi], al
-	INC DWORD PTR [esi + 1]
+	INC BYTE PTR [esi + 1]
 
 	POP ebp
 	RET 8
@@ -48,6 +48,7 @@ InitSem ENDP
 SignalSem PROC
 	PUSH ebp
 	MOV ebp, esp
+	PUSH esi
 
 	; Get sem code and put sem address in esi
 	MOV eax, [ebp + 8]
@@ -58,16 +59,18 @@ SignalSem PROC
 	CMP al, 0
 	JZ signalErr
 	
-	INC DWORD PTR [esi]
+	INC SBYTE PTR [esi]
 
 	signalErr:
 	POP ebp
+	POP esi
 	RET 4
 SignalSem ENDP
 
 WaitSem PROC
 	PUSH ebp
 	MOV ebp, esp
+	PUSH esi
 
 	; Get sem code and put sem address in esi
 	MOV eax, [ebp + 8]
@@ -78,18 +81,16 @@ WaitSem PROC
 	CMP al, 0
 	JZ waitErr
 
-	DEC paintSem
+	DEC SBYTE PTR [esi]
 
 	waitLoop:
-	CMP DWORD PTR [esi], 0
+	CMP BYTE PTR [esi], 0
 	JNL cont
-	INVOKE Sleep,	1		; dwMilliseconds
 	JMP waitLoop
-
 
 	waitErr:
 	cont:
-	RET
+	RET 4
 WaitSem ENDP
 
 GetSem PROC
@@ -97,9 +98,8 @@ GetSem PROC
 	JZ getPaint
 	
 	MOV eax, OFFSET moveSem
-	
-	getPaint:
 
+	getPaint:
 	MOV eax, OFFSET paintSem
 
 	gotSem:

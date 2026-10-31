@@ -43,11 +43,6 @@ InitBoard PROC
 	LOOP loopCol
 	JMP endLoop
 	loopCol:
-		; Set paint message
-		MOV move.uMsg, WM_PAINT
-
-		; Set x coordinate of board
-		MOV move.coord.x, cx
 
 		; Get the address of the current column and store in esi
 		MOV eax, numCols
@@ -68,11 +63,11 @@ InitBoard PROC
 		JMP endRow
 		loopRow:
 			; Set x coordinate of board
-			MOV move.coord.x, cx
+			MOV move.coord.x, bx
 			; Set y coordinate of board
 			MOV move.coord.y, cx
 			; Set paint message
-			MOV move.uMsg, WM_PAINT
+			MOV move.uMsg, WM_SQR
 
 			; Get the address of the current square on the board
 			MOV edi, ecx
@@ -92,7 +87,7 @@ InitBoard PROC
 			
 			; Send WM_PAINT message to GetMessage
 			INVOKE PostMessageA,	hWndMain,\			; hWnd
-									WM_PAINT,\			; uMsg
+									WM_SQR,\			; uMsg
 									ADDR move,\			; wParam
 									NULL				; lParam
 

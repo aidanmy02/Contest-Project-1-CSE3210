@@ -216,6 +216,8 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Jump to code action
 	CMP eax, WM_PAINT
 	JZ wpPaint
+	CMP eax, WM_SQR
+	JZ wpSqr
 	CMP eax, WM_DESTROY
 	JZ wpDestroy
 	JMP wpSys
@@ -235,11 +237,15 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		beganPaint:
 		MOV hdc, eax
-		CALL translateCoords
-		INVOKE FillRect,		hdc, ADDR updateRect, bSqr
-
 		INVOKE EndPaint,		hWnd,\			; hWnd
 								ADDR paintParam ; lpPaint
+		JMP wpDone
+
+	wpSqr:
+		INVOKE GetDC,			hWndMain
+		MOV hdc, eax
+		CALL translateCoords
+		INVOKE FillRect,		hdc, ADDR updateRect, bSqr
 		JMP wpDone
 
 	wpDestroy:
