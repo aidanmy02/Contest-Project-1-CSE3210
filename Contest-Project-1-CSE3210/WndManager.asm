@@ -235,13 +235,11 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		beganPaint:
 		MOV hdc, eax
-		CALL waitSem
 		CALL translateCoords
 		INVOKE FillRect,		hdc, ADDR updateRect, bSqr
 
 		INVOKE EndPaint,		hWnd,\			; hWnd
 								ADDR paintParam ; lpPaint
-		CALL signalSem
 		JMP wpDone
 
 	wpDestroy:

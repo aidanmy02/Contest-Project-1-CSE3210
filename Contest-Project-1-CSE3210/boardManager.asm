@@ -67,9 +67,6 @@ InitBoard PROC
 		LOOP loopRow
 		JMP endRow
 		loopRow:
-			; Lock mutex
-			CALL waitSem
-
 			; Set x coordinate of board
 			MOV move.coord.x, cx
 			; Set y coordinate of board
@@ -99,8 +96,6 @@ InitBoard PROC
 									ADDR move,\			; wParam
 									NULL				; lParam
 
-			; Unlock mutex
-			CALL signalSem
 		JMP startRow
 		
 		endRow:

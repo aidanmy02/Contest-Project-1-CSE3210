@@ -47,8 +47,8 @@ BQUEEN EQU 'q'
 BKING EQU 'k'
 
 ; Semaphore Codes
-SEM_PAINT EQU 0
-SEM_MOVE EQU 1
+EXTERN SEM_PAINT:BYTE
+EXTERN SEM_MOVE: BYTE
 
 ; Structs
 ; Coordinate
