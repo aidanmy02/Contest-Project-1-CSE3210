@@ -236,9 +236,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		beganPaint:
 		MOV hdc, eax
 		CALL waitSem
-		INVOKE CreateSolidBrush,bSqrColor
-		MOV bSqr, eax
-
+		CALL translateCoords
 		INVOKE FillRect,		hdc, ADDR updateRect, bSqr
 
 		INVOKE EndPaint,		hWnd,\			; hWnd
@@ -345,8 +343,13 @@ createWnd PROC
 	MOV eax, 0
 	PUSH eax
 	CALL InitSem
+	
+	INVOKE CreateSolidBrush,	wSqrColor			; color
+	MOV wSqr, eax
 
-	INVOKE UpdateWindow,	hWndMain				; hWnd
+	INVOKE CreateSolidBrush,	bSqrColor			; color
+	MOV bSqr, eax
+	
 	RET 
 createWnd ENDP
 

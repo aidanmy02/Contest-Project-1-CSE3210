@@ -37,10 +37,12 @@ BoardProc ENDP
 InitBoard PROC
 	; Loop over all columns
 	MOV ecx, numCols
-	loopCol:
-		; Lock mutex
-		CALL waitSem
+	INC ecx
 
+	startCol:
+	LOOP loopCol
+	JMP endLoop
+	loopCol:
 		; Set paint message
 		MOV move.uMsg, WM_PAINT
 
@@ -54,12 +56,26 @@ InitBoard PROC
 		MOV esi, OFFSET board
 		ADD esi, eax
 
+		; Copy ecx into ebx to move into move.coord.x after semaphore is locked
+		MOV ebx, ecx
 		; Save ecx and move inner loop count into ecx
 		PUSH ecx
 		MOV ecx, numRows
+		INC ecx
+
+		startRow:
+		LOOP loopRow
+		JMP endRow
 		loopRow:
+			; Lock mutex
+			CALL waitSem
+
+			; Set x coordinate of board
+			MOV move.coord.x, cx
 			; Set y coordinate of board
 			MOV move.coord.y, cx
+			; Set paint message
+			MOV move.uMsg, WM_PAINT
 
 			; Get the address of the current square on the board
 			MOV edi, ecx
@@ -85,11 +101,14 @@ InitBoard PROC
 
 			; Unlock mutex
 			CALL signalSem
-		loop loopRow
+		JMP startRow
 		
+		endRow:
 		; Return outer loop counter to ecx
 		POP ecx
-	loop loopCol
+	JMP startCol
+
+	endLoop:
 	RET
 InitBoard ENDP
 
@@ -98,6 +117,7 @@ GetSqrColor PROC
 	MOV ebp, esp
 
 	; Add coordinates divide by two to check even/odd
+	XOR edx, edx
 	MOV eax, [ebp + 8]
 	ADD eax, [ebp + 12]
 	MOV ebx, 2

@@ -46,6 +46,10 @@ BBISHOP EQU 'b'
 BQUEEN EQU 'q'
 BKING EQU 'k'
 
+; Semaphore Codes
+SEM_PAINT EQU 0
+SEM_MOVE EQU 1
+
 ; Structs
 ; Coordinate
 COORDSTRUCT STRUCT
