@@ -237,15 +237,19 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		beganPaint:
 		MOV hdc, eax
-		INVOKE EndPaint,		hWnd,\			; hWnd
-								ADDR paintParam ; lpPaint
+		INVOKE FillRect,		hdc,\				; hDC
+								ADDR updateRect,\	; lprc
+								bSqr				; hbr
+
+		INVOKE EndPaint,		hWnd,\				; hWnd
+								ADDR paintParam		; lpPaint
 		JMP wpDone
 
 	wpSqr:
-		INVOKE GetDC,			hWndMain
-		MOV hdc, eax
 		CALL translateCoords
-		INVOKE FillRect,		hdc, ADDR updateRect, bSqr
+		INVOKE InvalidateRect,	hWndMain,\			; hWnd
+								ADDR updateRect,\	; lpRect
+								FALSE				; bErase
 		JMP wpDone
 
 	wpDestroy:
@@ -368,12 +372,15 @@ translateCoords PROC
 	SUB eax, sqrLen
 	MOV updateRect.left, eax
 
+	; Flip y coordinate to align with window coord layout
 	MOVZX eax, move.coord.y
+	NEG eax
+	ADD eax, 8
 	MOV ebx, sqrLen
 	MUL ebx
-	MOV updateRect.bottom, eax
-	SUB eax, sqrLen
 	MOV updateRect.top, eax
+	ADD eax, sqrLen
+	MOV updateRect.bottom, eax
 
 	RET
 translateCoords ENDP

@@ -185,6 +185,11 @@ HeapAlloc PROTO,		hHeap:DWORD,\
 						dwFlags:DWORD,\
 						dwBytes:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
+InvalidateRect PROTO,	hWnd:DWORD,\
+						lpRect:DWORD,\
+						bErase:BYTE			; BOOL
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursora
 LoadCursorA PROTO,		hInstance:DWORD,\
 						lpCursorName:DWORD
