@@ -38,17 +38,16 @@ InitBoard PROC
 	; Loop over all columns
 	MOV ecx, numCols
 	INC ecx
-	XOR ebx, ebx	; Store current MOVESTRUCT in move
+	MOV esi, OFFSET move	; Use esi to keep track of the current field of each MOVESTRUCT
 
 	startCol:
 	LOOP loopCol
 	JMP endLoop
 	loopCol:
-		; Copy ecx into edx to move into move.coord.x after semaphore is locked
+		; Copy ecx into edx to use for move.coord.x and save before inner loop
 		MOV edx, ecx
 
-		; Save ecx and move inner loop count into ecx
-		PUSH ecx
+		; Inner loop count
 		MOV ecx, numRows
 		INC ecx
 
@@ -56,14 +55,7 @@ InitBoard PROC
 		LOOP loopRow
 		JMP endRow
 		loopRow:
-			; Get position of current MOVESTRUCT
-			MOV eax, SIZEOF MOVESTRUCT
-			PUSH edx
-			XOR edx, edx
-			MUL ebx
-			MOV esi, OFFSET move
-			ADD esi, eax
-			POP edx
+			MOV ebx, esi	; Store the offset of the current MOVESTRUCT
 
 			; Set uMsg
 			MOV eax, WM_SQR
@@ -81,25 +73,31 @@ InitBoard PROC
 			MOV [esi], al
 			ADD esi, SIZEOF MOVESTRUCT.piece
 
-			; Push x and y coordinates for GetSqrColor
-			MOVZX eax, move.coord.x
-			PUSH eax
-			MOVZX eax, move.coord.y
-			PUSH eax
+			; Save values of ecx and edx
+			PUSH edx
+			PUSH ecx
+
+			; Get square Color
 			CALL GetSqrColor
-			MOV move.sqrColor, al
+			MOV [esi], al
+			ADD esi, SIZEOF MOVESTRUCT.sqrColor
 			
+			; Save current address
+			PUSH esi
+
 			; Send WM_PAINT message to GetMessage
 			INVOKE PostMessageA,	hWndMain,\			; hWnd
 									WM_SQR,\			; uMsg
-									ADDR move,\			; wParam
+									[ebx],\				; wParam
 									NULL				; lParam
-
+			
+			POP esi
+			POP ecx
+			POP edx
 		JMP startRow
-		
 		endRow:
 		; Return outer loop counter to ecx
-		POP ecx
+		MOV ecx, edx
 	JMP startCol
 
 	endLoop:
@@ -107,21 +105,15 @@ InitBoard PROC
 InitBoard ENDP
 
 GetSqrColor PROC
-	PUSH ebp
-	MOV ebp, esp
-
-	; Add coordinates divide by two to check even/odd
-	XOR edx, edx
-	MOV eax, [ebp + 8]
-	ADD eax, [ebp + 12]
-	MOV ebx, 2
-	DIV ebx
-
-	; If even, then the square is white
-	CMP edx, 0
+	; edx contains columns and ecx contains rows
+	MOV eax, edx
+	ADD eax, ecx
+	
+	; If even, then white
+	TEST eax, 1
 	JZ whiteSqr
 
-	; Else, square is black
+	; Else, black
 	MOV eax, 1
 	JMP gotColor
 
@@ -129,7 +121,6 @@ GetSqrColor PROC
 	XOR eax, eax
 
 	gotColor:
-	POP ebp
-	RET 8
+	RET
 GetSqrColor ENDP
 END
