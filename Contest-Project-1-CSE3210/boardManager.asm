@@ -25,15 +25,40 @@ BoardProc PROC
 	JZ bpInit
 	
 	bpInit:
-	CALL initBoard
-	INVOKE ExitThread,	NULL
+		CALL initBoard
+		INVOKE ExitThread,	NULL
 	bpDone:
 	RET
 BoardProc ENDP
 
 initBoard PROC
-	CALL waitSem
-
+	XOR ecx, ecx
+	XOR edx, edx
+	MOV eax, SIZEOF board
+	MOV ebx, SIZEOF board._a
+	DIV ebx
+	MOV ecx, eax
+	loopCol:
+		CALL waitSem
+		MOV move.uMsg, WM_PAINT
+		MOV move.coord.x, cx
+		MOV eax, ecx
+		MOV ebx, SIZEOF board
+		MUL ebx
+		MOV esi, eax
+		ADD esi, OFFSET move
+		PUSH ecx
+		MOV ecx, LENGTHOF board._a
+		loopRow:
+			MOV move.coord.y, cx
+			MOV edi, ecx
+			MOV eax, [esi + edi]
+			MOV move.piece, al
+			; call for paint
+			CALL signalSem
+		loop loopRow
+		POP ecx
+	loop loopCol
 	CALL signalSem
 	RET
 initBoard ENDP

@@ -233,8 +233,8 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		CALL errWnd
 
 		beganPaint:
-		CALL waitSem
 		MOV hdc, eax
+		CALL waitSem
 		INVOKE CreateSolidBrush,bSqrColor
 		MOV bSqr, eax
 
@@ -243,6 +243,8 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		INVOKE EndPaint,		hWnd,\			; hWnd
 								ADDR paintParam ; lpPaint
 		CALL signalSem
+		JMP wpDone
+
 	wpDestroy:
 		INVOKE DestroyWindow,	hWnd			; hWnd
 		JMP wpDone
@@ -413,7 +415,7 @@ errWnd PROC
 	POP errMsg
 	INVOKE MessageBoxA,		NULL,\				; hWnd
 							errMsg,\			; lpText
-							ADDR errTitle,\			; lpCaption
+							ADDR errTitle,\		; lpCaption
 							NULL				; uType
 
 	POP ebp

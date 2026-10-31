@@ -49,15 +49,15 @@ BKING EQU 'k'
 ; Structs
 ; Coordinate
 COORDSTRUCT STRUCT
-	x BYTE ?
-	y BYTE ?
+	x WORD ?
+	y WORD ?
 COORDSTRUCT ENDS
 
 ; Move
 MOVESTRUCT STRUCT
 	uMsg DWORD ?
 	coord COORDSTRUCT <>
-	piece DWORD ?
+	piece BYTE ?
 MOVESTRUCT ENDS
 
 EXTERNDEF move:MOVESTRUCT
