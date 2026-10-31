@@ -337,7 +337,9 @@ createWnd PROC
 	INVOKE ShowWindow,		hWndMain,				; hWnd
 							SW_SHOWDEFAULT			; nCmdShow
 	
-	; Initialize semaphore for painting
+	; Initialize semaphore for paintinG
+	MOV eax, SEM_PAINT
+	PUSH eax
 	MOV eax, 0
 	PUSH eax
 	CALL InitSem

@@ -30,37 +30,64 @@ moveSem Semaphore <>
 InitSem PROC
 	PUSH ebp
 	MOV ebp, esp
+
+	; Get sem code and put sem address in esi
 	MOV eax, [ebp + 8]
-	MOV paintSem.sem, al
-	MOV paintSem.bInit, 1
+	CALL GetSem
+	MOV esi, eax
+
+	; Initilize sem with value and set the init boolean to true
+	MOV eax, [ebp + 12]
+	MOV [esi], al
+	INC DWORD PTR [esi + 1]
+
 	POP ebp
-	RET 4
+	RET 8
 InitSem ENDP
 
 SignalSem PROC
-	MOV al, paintSem.bInit
+	PUSH ebp
+	MOV ebp, esp
+
+	; Get sem code and put sem address in esi
+	MOV eax, [ebp + 8]
+	CALL GetSem
+	MOV esi, eax
+
+	MOV al, [esi + 1]
 	CMP al, 0
 	JZ signalErr
 	
-	INC paintSem
+	INC DWORD PTR [esi]
 
 	signalErr:
-	RET
+	POP ebp
+	RET 4
 SignalSem ENDP
 
 WaitSem PROC
-	MOV al, paintSem.bInit
+	PUSH ebp
+	MOV ebp, esp
+
+	; Get sem code and put sem address in esi
+	MOV eax, [ebp + 8]
+	CALL GetSem
+	MOV esi, eax
+
+	MOV al, [esi + 1]
 	CMP al, 0
-	JZ cont
+	JZ waitErr
 
 	DEC paintSem
 
 	waitLoop:
-	CMP paintSem.sem, 0
+	CMP DWORD PTR [esi], 0
 	JNL cont
 	INVOKE Sleep,	1		; dwMilliseconds
 	JMP waitLoop
 
+
+	waitErr:
 	cont:
 	RET
 WaitSem ENDP
