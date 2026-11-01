@@ -284,16 +284,24 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		INVOKE FillRect,		hdc,\				; hDC
 								edi,\				; lprc
 								eax					; hbr
+
 		XOR eax, eax
 		MOV al, (MOVESTRUCT PTR [esi]).piece
 		CALL getPieceDC
 		CMP eax, NULL
-		JMP wpDone
-		MOV esi, eax
+		JZ wpDone
 
-		; Get handle to DC
-		INVOKE GetDC,			hWndMain			; hWnd
-		MOV hdc, eax
+		INVOKE TransparentBlt,	hdc,\					; hdcDest
+								(RECT PTR [edi]).left,\	; xoriginDest
+								(RECT PTR [edi]).top,\	; yoriginDest
+								sqrLen,\				; wDest
+								sqrLen,\				; hDest
+								eax,\					; hdcSrc
+								0,\						; xoriginSrc
+								0,\						; yoriginSrc
+								sqrLen,\				; wSrc
+								sqrLen,\				; hSrc
+								transColor				; crTransparent
 
 		JMP wpDone
 
