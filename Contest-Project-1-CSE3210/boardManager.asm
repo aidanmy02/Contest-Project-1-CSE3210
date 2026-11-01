@@ -55,23 +55,15 @@ InitBoard PROC
 		LOOP loopRow
 		JMP endRow
 		loopRow:
-			MOV ebx, esi	; Store the offset of the current MOVESTRUCT
-
 			; Set uMsg
-			MOV eax, WM_SQR
-			MOV [esi], eax
-			ADD esi, SIZEOF MOVESTRUCT.uMsg
+			MOV (MOVESTRUCT PTR [esi]).uMsg, WM_SQR
 			; Set x coordinate of board
-			MOV [esi], dx		; edx contains col
-			ADD esi, SIZEOF MOVESTRUCT.coord.x
+			MOV (MOVESTRUCT PTR [esi]).coord.x, dx		; edx contains col
 			; Set y coordinate of board
-			MOV [esi], cx		; ecx contains row
-			ADD esi, SIZEOF MOVESTRUCT.coord.y
-
+			MOV (MOVESTRUCT PTR [esi]).coord.y, cx		; ecx contains row
 			; TODO: implement move.piece
 			MOV al, 0
-			MOV [esi], al
-			ADD esi, SIZEOF MOVESTRUCT.piece
+			MOV (MOVESTRUCT PTR [esi]).piece, al
 
 			; Save values of ecx and edx
 			PUSH edx
@@ -79,8 +71,7 @@ InitBoard PROC
 
 			; Get square Color
 			CALL GetSqrColor
-			MOV [esi], al
-			ADD esi, SIZEOF MOVESTRUCT.sqrColor
+			MOV (MOVESTRUCT PTR [esi]).sqrColor, al
 			
 			; Save current address
 			PUSH esi
@@ -88,12 +79,13 @@ InitBoard PROC
 			; Send WM_PAINT message to GetMessage
 			INVOKE PostMessageA,	hWndMain,\			; hWnd
 									WM_SQR,\			; uMsg
-									ebx,\				; wParam
+									esi,\				; wParam
 									NULL				; lParam
 			
 			POP esi
 			POP ecx
 			POP edx
+			ADD esi, SIZEOF MOVESTRUCT		; Move to next MOVESTRUCT
 		JMP startRow
 		endRow:
 		; Return outer loop counter to ecx
@@ -123,4 +115,13 @@ GetSqrColor PROC
 	gotColor:
 	RET
 GetSqrColor ENDP
+
+GetSqrContent PROC
+	PUSH ebp
+	MOV ebp, esp
+
+
+	POP ebp
+	RET 8
+GetSqrContent ENDP
 END
