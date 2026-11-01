@@ -45,7 +45,7 @@ InitBoard PROC
 	JMP endLoop
 	loopCol:
 		; Copy ecx into edx to use for move.coord.x and save before inner loop
-		MOV edx, ecx
+		MOV ebx, ecx
 
 		; Inner loop count
 		MOV ecx, numRows
@@ -58,16 +58,17 @@ InitBoard PROC
 			; Set uMsg
 			MOV (MOVESTRUCT PTR [esi]).uMsg, WM_SQR
 			; Set x coordinate of board
-			MOV (MOVESTRUCT PTR [esi]).coord.x, dx		; edx contains col
+			MOV (MOVESTRUCT PTR [esi]).coord.x, bx		; ebx contains col
 			; Set y coordinate of board
 			MOV (MOVESTRUCT PTR [esi]).coord.y, cx		; ecx contains row
-			; TODO: implement move.piece
-			MOV al, 0
-			MOV (MOVESTRUCT PTR [esi]).piece, al
 
 			; Save values of ecx and edx
-			PUSH edx
+			PUSH ebx
 			PUSH ecx
+
+			; Set piece
+			CALL GetSqrContent
+			MOV (MOVESTRUCT PTR [esi]).piece, al
 
 			; Get square Color
 			CALL GetSqrColor
@@ -84,12 +85,12 @@ InitBoard PROC
 			
 			POP esi
 			POP ecx
-			POP edx
+			POP ebx
 			ADD esi, SIZEOF MOVESTRUCT		; Move to next MOVESTRUCT
 		JMP startRow
 		endRow:
 		; Return outer loop counter to ecx
-		MOV ecx, edx
+		MOV ecx, ebx
 	JMP startCol
 
 	endLoop:
@@ -97,8 +98,8 @@ InitBoard PROC
 InitBoard ENDP
 
 GetSqrColor PROC
-	; edx contains columns and ecx contains rows
-	MOV eax, edx
+	; ebx contains columns and ecx contains rows
+	MOV eax, ebx
 	ADD eax, ecx
 	
 	; If even, then white
@@ -116,12 +117,25 @@ GetSqrColor PROC
 	RET
 GetSqrColor ENDP
 
+;
 GetSqrContent PROC
-	PUSH ebp
-	MOV ebp, esp
+;	@ Params:	ecx - column coord
+;				ebx - row coord
+;
+;	@ Return:	eax - piece
 
+	; Get column offset
+	MOV eax, numCols
+	DEC eax			; 0-based index
+	XOR edx, edx
+	MUL ebx
+	; Add row offset
+	ADD eax, ecx
+	DEC eax			; 0-based index
 
-	POP ebp
-	RET 8
+	; Get piece
+	ADD eax, OFFSET board
+	MOV al, [eax]
+	RET
 GetSqrContent ENDP
 END
