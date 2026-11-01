@@ -236,23 +236,56 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		CALL errWnd
 
 		beganPaint:
+		COMMENT @
 		MOV hdc, eax
+		MOV eax, OFFSET paintParam.rcPaint
+		ADD eax, SIZEOF RECT
 		INVOKE FillRect,		hdc,\						; hDC
 								ADDR paintParam.rcPaint,\	; lprc
-								bSqr						; hbr
-
+								eax							; hbr
+		@
 		INVOKE EndPaint,		hWnd,\				; hWnd
 								ADDR paintParam		; lpPaint
 		JMP wpDone
 
 	wpSqr:
+		; Get MOVESTRUCT address from wParam
 		MOV esi, wpWParam
+
+		; Get square color
+		XOR eax, eax
+		MOV al, (MOVESTRUCT PTR [esi]).sqrColor
+		CMP al, 0
+		JZ isWhiteSqr
+		MOV eax, bSqr
+		JMP gotSqrColor
+		isWhiteSqr:
+			MOV eax, wSqr
+
+		gotSqrColor:
+		; Save brush handle
+		PUSH eax
+
+		; Get RECT of square
 		ADD esi, SIZEOF MOVESTRUCT.uMsg
 		CALL translateCoords
+		MOV esi, eax
+
+		; Get handle to DC
+		INVOKE GetDC,			hWndMain			; hWnd
+		MOV hdc, eax
+
+		; Return brush handle to eax
+		POP eax
+		INVOKE FillRect,		hdc,\				; hDC
+								esi,\				; lprc
+								eax					; hbr
+		COMMENT @
 		INVOKE RedrawWindow,	hWndMain,\			; hWnd
 								eax,\				; lpRect
 								NULL,\				; hrgnUpdate
-								0101h				; flags 
+								0121h				; flags
+		@
 		JMP wpDone
 
 	wpDestroy:
@@ -401,6 +434,7 @@ translateCoords PROC
 	ADD eax, sqrLen
 	MOV (RECT PTR [edi]).bottom, eax
 
+	; Return address of RECT
 	MOV eax, edi
 	RET
 translateCoords ENDP
