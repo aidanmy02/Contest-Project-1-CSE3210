@@ -1,14 +1,14 @@
 INCLUDE Chess.inc
 
 BOARDSTRUCT STRUCT
-	_a BYTE WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK
-	_b BYTE 8 DUP(WPAWN)
-	_c BYTE 8 DUP(0)
-	_d BYTE 8 DUP(0)
-	_e BYTE 8 DUP(0)
-	_f BYTE 8 DUP(0)
-	_g BYTE 8 DUP(BPAWN)
-	_h BYTE BROOK, BKNIGHT, BBISHOP, BQUEEN, BKING, BBISHOP, BKNIGHT, BROOK
+	_a BYTE WROOK,	WPAWN,	0,	0,	0,	0,	BPAWN,	BROOK
+	_b BYTE WKNIGHT,WPAWN,	0,	0,	0,	0,	BPAWN,	BKNIGHT
+	_c BYTE WBISHOP,WPAWN,	0,	0,	0,	0,	BPAWN,	BBISHOP
+	_d BYTE WQUEEN,	WPAWN,	0,	0,	0,	0,	BPAWN,	BQUEEN
+	_e BYTE WKING,	WPAWN,	0,	0,	0,	0,	BPAWN,	BKING
+	_f BYTE WBISHOP,WPAWN,	0,	0,	0,	0,	BPAWN,	BBISHOP
+	_g BYTE WKNIGHT,WPAWN,	0,	0,	0,	0,	BPAWN,	BKNIGHT
+	_h BYTE WROOK,	WPAWN,	0,	0,	0,	0,	BPAWN,	BROOK
 BOARDSTRUCT ENDS
 
 .data
@@ -119,16 +119,17 @@ GetSqrColor ENDP
 
 ;
 GetSqrContent PROC
-;	@ Params:	ecx - column coord
-;				ebx - row coord
+;	@ Params:	ecx - row coord
+;				ebx - column coord
 ;
 ;	@ Return:	eax - piece
 
 	; Get column offset
 	MOV eax, numCols
-	DEC eax			; 0-based index
+	DEC ebx			; 0-based index
 	XOR edx, edx
 	MUL ebx
+	INC ebx			; restore ebx to 1-based index
 	; Add row offset
 	ADD eax, ecx
 	DEC eax			; 0-based index

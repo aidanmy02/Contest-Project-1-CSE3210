@@ -459,19 +459,20 @@ getPieceDC ENDP
 
 ;
 translateCoords PROC
-;	@ Params:	eax upper half - x coordinate
-;				ax - y coordinate
+;	@ Params:	ax - x coordinate
+;				eax upper half - y coordinate
 ;	@ Return:	eax - address of RECT
 	PUSH esi		; Save esi
 
 	; Get offset of RECT
 	; Conserves coords in ecx
 	MOV ecx, eax
-	SHR eax, 16
+	AND eax, 0FFFFh		; Get x coordinate
 	DEC eax
 	MOV ebx, 8
 	MUL ebx
-	ADD ax, cx
+	MOVZX ebx, cx
+	ADD eax, ebx
 	DEC eax
 	MOV ebx, SIZEOF RECT
 	MUL ebx
@@ -479,8 +480,7 @@ translateCoords PROC
 	ADD esi, eax
 
 	; Get right and left sides of the square
-	MOV eax, ecx
-	SHR eax, 16
+	MOVZX eax, cx
 	MOV ebx, sqrLen
 	MUL ebx
 	MOV (RECT PTR [esi]).right, eax
@@ -488,7 +488,8 @@ translateCoords PROC
 	MOV (RECT PTR [esi]).left, eax
 
 	; Flip y coordinate to align with window coord layout
-	MOVZX eax, cx
+	MOV eax, ecx
+	SHR eax, 16
 	NEG eax
 	ADD eax, 8
 	MOV ebx, sqrLen
