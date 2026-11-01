@@ -62,10 +62,10 @@ InitBoard PROC
 			MOV [esi], eax
 			ADD esi, SIZEOF MOVESTRUCT.uMsg
 			; Set x coordinate of board
-			MOV [esi], edx		; edx contains col
+			MOV [esi], dx		; edx contains col
 			ADD esi, SIZEOF MOVESTRUCT.coord.x
 			; Set y coordinate of board
-			MOV [esi], ecx		; ecx contains row
+			MOV [esi], cx		; ecx contains row
 			ADD esi, SIZEOF MOVESTRUCT.coord.y
 
 			; TODO: implement move.piece

@@ -185,6 +185,7 @@ HeapAlloc PROTO,		hHeap:DWORD,\
 						dwFlags:DWORD,\
 						dwBytes:DWORD
 
+; TODO: remove if unnecessary
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-invalidaterect
 InvalidateRect PROTO,	hWnd:DWORD,\
 						lpRect:DWORD,\
@@ -205,6 +206,11 @@ PostMessageA PROTO,		hWnd:DWORD,\
 						msg:DWORD,\
 						wParam:DWORD,\
 						lParam:DWORD
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-redrawwindow
+RedrawWindow PROTO,		hWnd:DWORD,\
+						lprcUpdate:DWORD,\
+						hrgnUpdate:DWORD,\
+						flags:DWORD	
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
 RegisterClassExA PROTO,	wndClassPTR:DWORD

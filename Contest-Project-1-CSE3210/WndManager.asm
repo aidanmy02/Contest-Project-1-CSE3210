@@ -30,10 +30,10 @@ RECT ENDS
 ; Source: https://learn.microsoft.com/en-us/previous-versions/ms961291(v=msdn.10)
 PAINTSTRUCT STRUCT
 	hdc DWORD ?
-	fErase BYTE ?					; BOOL
+	fErase DWORD NULL				; BOOL
 	rcPaint RECT <>					; RECT STRUCT
-	fRestore BYTE NULL				; BOOL, reserved
-	fIncUpdate BYTE NULL			; BOOL, reserved
+	fRestore DWORD NULL				; BOOL, reserved
+	fIncUpdate DWORD NULL			; BOOL, reserved
 	rgbReserved BYTE 32 DUP(NULL)	; reserveD
 PAINTSTRUCT ENDS
 
@@ -237,9 +237,9 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		beganPaint:
 		MOV hdc, eax
-		INVOKE FillRect,		hdc,\				; hDC
-								ADDR updateRect,\	; lprc
-								bSqr				; hbr
+		INVOKE FillRect,		hdc,\						; hDC
+								ADDR paintParam.rcPaint,\	; lprc
+								bSqr						; hbr
 
 		INVOKE EndPaint,		hWnd,\				; hWnd
 								ADDR paintParam		; lpPaint
@@ -249,9 +249,10 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		MOV esi, wpWParam
 		ADD esi, SIZEOF MOVESTRUCT.uMsg
 		CALL translateCoords
-		INVOKE InvalidateRect,	hWndMain,\			; hWnd
+		INVOKE RedrawWindow,	hWndMain,\			; hWnd
 								eax,\				; lpRect
-								FALSE				; bErase
+								NULL,\				; hrgnUpdate
+								0101h				; flags 
 		JMP wpDone
 
 	wpDestroy:
