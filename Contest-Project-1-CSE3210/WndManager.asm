@@ -157,6 +157,9 @@ CW_USEDEFAULT EQU 80000000h			; x, y		; Source: https://learn.microsoft.com/en-u
 IMAGE_BITMAP EQU 0		; uType				; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-copyimage
 LR_LOADFROMFILE EQU 10h	; fuLoad			; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadimagea
 
+; Window event codes
+WM_LBUTTONDOWN EQU 0201h
+
 .code
 ; Implementation of WinMain for message passing to window
 WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DWORD
@@ -224,7 +227,10 @@ WinMain ENDP
 WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	; Get WP code
 	MOV eax, wpUMsg
-	
+
+	CMP eax, WM_LBUTTONDOWN
+	JZ wpClick
+
 	; Jump to code action
 	CMP eax, WM_PAINT
 	JZ wpPaint
@@ -233,6 +239,11 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	CMP eax, WM_DESTROY
 	JZ wpDestroy
 	JMP wpSys
+
+	wpClick:
+		MOV eax, wpLParam
+		CALL transCoordsToBoard
+		JMP wpDone
 
 	wpPaint:
 		INVOKE BeginPaint,		hWnd,\			; hWnd
@@ -272,7 +283,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		; Get RECT of square
 		MOV eax, (MOVESTRUCT PTR [esi]).coord
-		CALL translateCoords
+		CALL transCoordsToWnd
 		MOV edi, eax
 
 		; Get handle to DC
@@ -458,7 +469,7 @@ getPieceDC PROC
 getPieceDC ENDP
 
 ;
-translateCoords PROC
+transCoordsToWnd PROC
 ;	@ Params:	ax - x coordinate
 ;				eax upper half - y coordinate
 ;	@ Return:	eax - address of RECT
@@ -502,7 +513,42 @@ translateCoords PROC
 	MOV eax, esi
 	POP esi			; Restore esi
 	RET
-translateCoords ENDP
+transCoordsToWnd ENDP
+
+;
+transCoordsToBoard PROC
+;	@ Params:	ax - x coordinate Wnd
+;				eax upper half - y coordinate Wnd
+;	@ Return:	ax - x coordinate board
+;				eax upper half - y coordinate board
+	; Save Wnd x coordinate in ecx
+	MOVZX ecx, ax
+
+	; Get board y coordinate
+	SHR eax, 16
+	MOV ebx, sqrLen
+	XOR edx, edx
+	DIV ebx
+	NEG eax
+	ADD eax, 8
+	SHL eax, 16
+
+	; Swap eax and ecx for division
+	PUSH eax
+	PUSH ecx
+	POP eax
+	POP ecx
+
+	; Get board x coordinate
+	XOR edx, edx
+	MOV ebx, sqrLen
+	DIV ebx
+	INC eax
+
+	; Pack x and y into eax
+	ADD eax, ecx
+	RET
+transCoordsToBoard ENDP
 
 ; Creates error popup window
 errWnd PROC
