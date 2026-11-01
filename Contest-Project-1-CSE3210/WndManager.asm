@@ -271,7 +271,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		PUSH eax
 
 		; Get RECT of square
-		ADD esi, SIZEOF MOVESTRUCT.uMsg
+		MOV eax, (MOVESTRUCT PTR [esi]).coord
 		CALL translateCoords
 		MOV esi, eax
 
@@ -284,6 +284,10 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		INVOKE FillRect,		hdc,\				; hDC
 								esi,\				; lprc
 								eax					; hbr
+
+		XOR eax, eax
+		MOV al, (MOVESTRUCT PTR [esi]).piece
+		CALL getPieceDC
 		JMP wpDone
 
 	wpDestroy:
@@ -420,43 +424,57 @@ createWnd PROC
 	RET 
 createWnd ENDP
 
+;
+getPieceDC PROC
+;	@ Params:	eax - piece
+;	@ Return:	eax - piece DC handle
+
+	RET
+getPieceDC ENDP
+
+;
 translateCoords PROC
-	; esi holds the address of a COORD in the current MOVESTRUCT
-	; Get the position of the corresponding RECT
-	XOR eax, eax
-	MOV ax, [esi]
+;	@ Params:	eax upper half - x coordinate
+;				ax - y coordinate
+;	@ Return:	eax - address of RECT
+	PUSH esi		; Save esi
+
+	; Get offset of RECT
+	; Conserves coords in ecx
+	MOV ecx, eax
+	SHR eax, 16
 	DEC eax
 	MOV ebx, 8
 	MUL ebx
-	ADD ax, [esi + 2]
+	ADD ax, cx
 	DEC eax
 	MOV ebx, SIZEOF RECT
 	MUL ebx
-	MOV edi, OFFSET updateRect
-	ADD edi, eax
+	MOV esi, OFFSET updateRect
+	ADD esi, eax
 
 	; Get right and left sides of the square
-	XOR eax, eax
-	MOV ax, [esi]
+	MOV eax, ecx
+	SHR eax, 16
 	MOV ebx, sqrLen
 	MUL ebx
-	MOV (RECT PTR [edi]).right, eax
+	MOV (RECT PTR [esi]).right, eax
 	SUB eax, sqrLen
-	MOV (RECT PTR [edi]).left, eax
+	MOV (RECT PTR [esi]).left, eax
 
 	; Flip y coordinate to align with window coord layout
-	XOR eax, eax
-	MOV ax, [esi + 2]
+	MOVZX eax, cx
 	NEG eax
 	ADD eax, 8
 	MOV ebx, sqrLen
 	MUL ebx
-	MOV (RECT PTR [edi]).top, eax
+	MOV (RECT PTR [esi]).top, eax
 	ADD eax, sqrLen
-	MOV (RECT PTR [edi]).bottom, eax
+	MOV (RECT PTR [esi]).bottom, eax
 
 	; Return address of RECT
-	MOV eax, edi
+	MOV eax, esi
+	POP esi			; Restore esi
 	RET
 translateCoords ENDP
 
