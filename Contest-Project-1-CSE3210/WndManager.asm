@@ -273,7 +273,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		; Get RECT of square
 		MOV eax, (MOVESTRUCT PTR [esi]).coord
 		CALL translateCoords
-		MOV esi, eax
+		MOV edi, eax
 
 		; Get handle to DC
 		INVOKE GetDC,			hWndMain			; hWnd
@@ -282,12 +282,19 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		; Return brush handle to eax
 		POP eax
 		INVOKE FillRect,		hdc,\				; hDC
-								esi,\				; lprc
+								edi,\				; lprc
 								eax					; hbr
-
 		XOR eax, eax
 		MOV al, (MOVESTRUCT PTR [esi]).piece
 		CALL getPieceDC
+		CMP eax, NULL
+		JMP wpDone
+		MOV esi, eax
+
+		; Get handle to DC
+		INVOKE GetDC,			hWndMain			; hWnd
+		MOV hdc, eax
+
 		JMP wpDone
 
 	wpDestroy:
@@ -428,7 +435,17 @@ createWnd ENDP
 getPieceDC PROC
 ;	@ Params:	eax - piece
 ;	@ Return:	eax - piece DC handle
+	CMP al, NULL			; Empty square
+	JZ gotPieceDC
+	COMMENT @		; TODO: add back when more pieces available
+	CMP al, PIECE_WQUEEN
+	JZ getWQueenDC
+	@
+	getWQueenDC:
+		MOV eax, wQueenDC
+		JMP gotPieceDC
 
+	gotPieceDC:
 	RET
 getPieceDC ENDP
 
