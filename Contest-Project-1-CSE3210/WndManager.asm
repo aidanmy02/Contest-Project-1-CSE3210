@@ -97,6 +97,7 @@ defaultRect RECT	<	0,\						; left
 updateRect RECT 64 DUP(<>)
 wSqrColor DWORD 0FFCFCFh
 bSqrColor DWORD 292817h
+transColor DWORD 0FFFFFFh
 
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
@@ -394,6 +395,21 @@ createWnd PROC
 	INVOKE SelectObject,		wQueenDC,\				; hDC
 								wQueenHBit				; hObject
 	MOV hReg, eax
+
+	INVOKE GetDC,				hWndMain				; hWnd
+	MOV hdc, eax
+
+	INVOKE TransparentBlt,		hdc,\					; hdcDest
+								0,\						; xoriginDest
+								0,\						; yoriginDest
+								sqrLen,\				; wDest
+								sqrLen,\				; hDest
+								wQueenDC,\				; hdcSrc
+								0,\						; xoriginSrc
+								0,\						; yoriginSrc
+								sqrLen,\				; wSrc
+								sqrLen,\				; hSrc
+								transColor				; crTransparent
 
 	INVOKE CreateSolidBrush,	wSqrColor				; color
 	MOV wSqr, eax

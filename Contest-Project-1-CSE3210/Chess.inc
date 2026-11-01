@@ -9,6 +9,7 @@ INCLUDELIB Kernel32.lib
 INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/cpp/assembler/masm/includelib-masm?view=msvc-170
 						;			https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
 INCLUDELIB Gdi32.lib	; Source:	https://learn.microsoft.com/en-us/windows/win32/gdi/windows-gdi
+INCLUDELIB Msimg32.lib	; Source:	https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-transparentblt
 
 ;Global Constants
 NULL EQU 0
@@ -239,5 +240,18 @@ ShowWindow PROTO,		hWnd:DWORD,\
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
 Sleep PROTO,			dwMilliseconds:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-transparentblt
+TransparentBlt PROTO,	hdcDest:DWORD,\
+						xoriginDest:DWORD,\
+						yoriginDest:DWORD,\
+						wDest:DWORD,\
+						hDest:DWORD,\
+						hdcSrc:DWORD,\
+						xoriginSrc:DWORD,\
+						yoriginSrc:DWORD,\
+						wSrc:DWORD,\
+						hSrc:DWORD,\
+						crTransparent:DWORD
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-updatewindow
-UpdateWindow PROTO,	hWnd:DWORD
+UpdateWindow PROTO,		hWnd:DWORD
