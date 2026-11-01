@@ -113,6 +113,12 @@ wndName BYTE "Testing Testing 123", 0
 ; Params for GetMessage
 msg MSGSTRUCT <>
 
+; Piece BMP Images Paths
+queenImgPath BYTE "C:\Users\aidan\source\repos\Contest-Project-1-CSE3210\Contest-Project-1-CSE3210\Pieces\queen.bmp", 0
+
+; Piece handles
+hBitWQueen DWORD ?
+
 ; Error Messages for errWnd
 errTitle BYTE "Error", 0
 defaultErrMsg BYTE "Unknown Error", 0
@@ -144,6 +150,10 @@ IDC_ARROW EQU 32512		; lpCursorName		; Source: https://learn.microsoft.com/en-us
 ; CreateWindowExA Codes
 WS_OVERLAPPEDWINDOW EQU 00CF0000h	; style		; Source: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 CW_USEDEFAULT EQU 80000000h			; x, y		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createmdiwindowa
+
+; LoadImageA Codes
+IMAGE_BITMAP EQU 0		; uType				; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-copyimage
+LR_LOADFROMFILE EQU 10h	; fuLoad			; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadimagea
 
 .code
 ; Implementation of WinMain for message passing to window
@@ -236,14 +246,6 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		CALL errWnd
 
 		beganPaint:
-		COMMENT @
-		MOV hdc, eax
-		MOV eax, OFFSET paintParam.rcPaint
-		ADD eax, SIZEOF RECT
-		INVOKE FillRect,		hdc,\						; hDC
-								ADDR paintParam.rcPaint,\	; lprc
-								eax							; hbr
-		@
 		INVOKE EndPaint,		hWnd,\				; hWnd
 								ADDR paintParam		; lpPaint
 		JMP wpDone
@@ -280,12 +282,6 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		INVOKE FillRect,		hdc,\				; hDC
 								esi,\				; lprc
 								eax					; hbr
-		COMMENT @
-		INVOKE RedrawWindow,	hWndMain,\			; hWnd
-								eax,\				; lpRect
-								NULL,\				; hrgnUpdate
-								0121h				; flags
-		@
 		JMP wpDone
 
 	wpDestroy:
@@ -382,14 +378,16 @@ createWnd PROC
 
 	INVOKE ShowWindow,		hWndMain,				; hWnd
 							SW_SHOWDEFAULT			; nCmdShow
-	
-	; Initialize semaphore for paintinG
-	MOV eax, SEM_PAINT
-	PUSH eax
-	MOV eax, 0
-	PUSH eax
-	CALL InitSem
-	
+
+	INVOKE LoadImageA,		WndClass.hInstance,\	; hInst
+							ADDR queenImgPath,\		; lpszName
+							IMAGE_BITMAP,\			; uType
+							NULL,\					; cxDesired
+							NULL,\					; cyDesired
+							LR_LOADFROMFILE			; fuLoad
+	MOV hBitWQueen, eax
+
+
 	INVOKE CreateSolidBrush,	wSqrColor			; color
 	MOV wSqr, eax
 
