@@ -106,6 +106,10 @@ AdjustWindowRect PROTO,	lpRect:DWORD,\
 BeginPaint PROTO,		hWnd:DWORD,\
 						lpPaint:DWORD
 
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createcompatibledc
+;		  https://learn.microsoft.com/en-us/previous-versions/windows/embedded/ee504566(v=winembedded.60)?redirectedfrom=MSDN
+CreateCompatibleDC PROTO,	hDC:DWORD
+
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createsolidbrush
 CreateSolidBrush PROTO,	color:DWORD
 
@@ -222,6 +226,11 @@ RedrawWindow PROTO,		hWnd:DWORD,\
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassa
 RegisterClassExA PROTO,	wndClassPTR:DWORD
+
+; Source: https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-selectobject
+;		  https://learn.microsoft.com/en-us/previous-versions/windows/embedded/ee504566(v=winembedded.60)?redirectedfrom=MSDN
+SelectObject PROTO,		hDC:DWORD,\
+						hObject:DWORD
 
 ; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 ShowWindow PROTO,		hWnd:DWORD,\

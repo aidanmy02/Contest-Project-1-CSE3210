@@ -1,5 +1,5 @@
 ﻿  Assembling WndManager.asm...
-WndManager.asm(218): warning A6004: procedure argument or local not referenced : hInstance
-WndManager.asm(218): warning A6004: procedure argument or local not referenced : lpCmdLine
-WndManager.asm(218): warning A6004: procedure argument or local not referenced : nShowCmd
+WndManager.asm(219): warning A6004: procedure argument or local not referenced : hInstance
+WndManager.asm(219): warning A6004: procedure argument or local not referenced : lpCmdLine
+WndManager.asm(219): warning A6004: procedure argument or local not referenced : nShowCmd
   Contest-Project-1-CSE3210.vcxproj -> C:\Users\aidan\source\repos\Contest-Project-1-CSE3210\Debug\Contest-Project-1-CSE3210.exe

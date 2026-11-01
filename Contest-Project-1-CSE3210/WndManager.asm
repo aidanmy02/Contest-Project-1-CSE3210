@@ -47,12 +47,6 @@ MSGSTRUCT STRUCT
 	lPrivate DWORD ?
 MSGSTRUCT ENDS
 
-COLORSTRUCT STRUCT
-	r DWORD ?
-	g DWORD ?
-	b DWORD ?
-COLORSTRUCT ENDS
-
 .data?
 ; Window Attributes
 classAtom DWORD ?		; From RegisterClassA
@@ -116,9 +110,16 @@ msg MSGSTRUCT <>
 ; Piece BMP Images Paths
 queenImgPath BYTE "C:\Users\aidan\source\repos\Contest-Project-1-CSE3210\Contest-Project-1-CSE3210\Pieces\queen.bmp", 0
 
-; Piece handles
-hBitWQueen DWORD ?
+; Piece BitMap handles
+wQueenHBit DWORD ?
 
+; Piece DC handles
+wQueenDC DWORD ?
+
+; Holds regions of pieces from SelectObject
+hReg DWORD ?
+
+; Piece 
 ; Error Messages for errWnd
 errTitle BYTE "Error", 0
 defaultErrMsg BYTE "Unknown Error", 0
@@ -376,22 +377,28 @@ createWnd PROC
 	windowCreated:
 	MOV hWndMain, eax
 
-	INVOKE ShowWindow,		hWndMain,				; hWnd
-							SW_SHOWDEFAULT			; nCmdShow
+	INVOKE ShowWindow,			hWndMain,				; hWnd
+								SW_SHOWDEFAULT			; nCmdShow
 
-	INVOKE LoadImageA,		WndClass.hInstance,\	; hInst
-							ADDR queenImgPath,\		; lpszName
-							IMAGE_BITMAP,\			; uType
-							NULL,\					; cxDesired
-							NULL,\					; cyDesired
-							LR_LOADFROMFILE			; fuLoad
-	MOV hBitWQueen, eax
+	INVOKE LoadImageA,			NULL,\	; hInst
+								ADDR queenImgPath,\		; lpszName
+								IMAGE_BITMAP,\			; uType
+								sqrLen,\				; cxDesired
+								sqrLen,\				; cyDesired
+								LR_LOADFROMFILE			; fuLoad
+	MOV wQueenHBit, eax
 
+	INVOKE CreateCompatibleDC,	NULL					; hDC
+	MOV wQueenDC, eax
 
-	INVOKE CreateSolidBrush,	wSqrColor			; color
+	INVOKE SelectObject,		wQueenDC,\				; hDC
+								wQueenHBit				; hObject
+	MOV hReg, eax
+
+	INVOKE CreateSolidBrush,	wSqrColor				; color
 	MOV wSqr, eax
 
-	INVOKE CreateSolidBrush,	bSqrColor			; color
+	INVOKE CreateSolidBrush,	bSqrColor				; color
 	MOV bSqr, eax
 	
 	RET 
