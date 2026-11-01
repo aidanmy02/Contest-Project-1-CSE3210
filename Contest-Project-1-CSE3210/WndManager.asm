@@ -100,7 +100,7 @@ defaultRect RECT	<	0,\						; left
 						clientLen		>		; bottom
 
 ; For painting
-updateRect RECT	64 DUP(<>)
+updateRect RECT 64 DUP(<>)
 wSqrColor DWORD 0FFCFCFh
 bSqrColor DWORD 292817h
 
