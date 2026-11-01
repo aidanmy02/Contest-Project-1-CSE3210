@@ -330,6 +330,106 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	RET
 WndProc ENDP
 
+;
+getPieceDC PROC
+;	@ Params:	eax - piece
+;	@ Return:	eax - piece DC handle
+	CMP al, NULL			; Empty square
+	JZ gotPieceDC
+	COMMENT @		; TODO: add back when more pieces available
+	CMP al, PIECE_WQUEEN
+	JZ getWQueenDC
+	@
+	getWQueenDC:
+		MOV eax, wQueenDC
+		JMP gotPieceDC
+
+	gotPieceDC:
+	RET
+getPieceDC ENDP
+
+;
+transCoordsToWnd PROC
+;	@ Params:	ax - x coordinate
+;				eax upper half - y coordinate
+;	@ Return:	eax - address of RECT
+	PUSH esi		; Save esi
+
+	; Get offset of RECT
+	; Conserves coords in ecx
+	MOV ecx, eax
+	AND eax, 0FFFFh		; Get x coordinate
+	DEC eax
+	MOV ebx, 8
+	MUL ebx
+	MOVZX ebx, cx
+	ADD eax, ebx
+	DEC eax
+	MOV ebx, SIZEOF RECT
+	MUL ebx
+	MOV esi, OFFSET updateRect
+	ADD esi, eax
+
+	; Get right and left sides of the square
+	MOVZX eax, cx
+	MOV ebx, sqrLen
+	MUL ebx
+	MOV (RECT PTR [esi]).right, eax
+	SUB eax, sqrLen
+	MOV (RECT PTR [esi]).left, eax
+
+	; Flip y coordinate to align with window coord layout
+	MOV eax, ecx
+	SHR eax, 16
+	NEG eax
+	ADD eax, 8
+	MOV ebx, sqrLen
+	MUL ebx
+	MOV (RECT PTR [esi]).top, eax
+	ADD eax, sqrLen
+	MOV (RECT PTR [esi]).bottom, eax
+
+	; Return address of RECT
+	MOV eax, esi
+	POP esi			; Restore esi
+	RET
+transCoordsToWnd ENDP
+
+;
+transCoordsToBoard PROC
+;	@ Params:	ax - x coordinate Wnd
+;				eax upper half - y coordinate Wnd
+;	@ Return:	ax - x coordinate board
+;				eax upper half - y coordinate board
+	; Save Wnd x coordinate in ecx
+	MOVZX ecx, ax
+
+	; Get board y coordinate
+	SHR eax, 16
+	MOV ebx, sqrLen
+	XOR edx, edx
+	DIV ebx
+	NEG eax
+	ADD eax, 8
+	SHL eax, 16
+
+	; Swap eax and ecx for division
+	PUSH eax
+	PUSH ecx
+	POP eax
+	POP ecx
+
+	; Get board x coordinate
+	XOR edx, edx
+	MOV ebx, sqrLen
+	DIV ebx
+	INC eax
+
+	; Pack x and y into eax
+	ADD eax, ecx
+	RET
+transCoordsToBoard ENDP
+
 ; Registers window class and creates window
 createWnd PROC
 	INVOKE LoadCursorA, NULL,\					; hInstance
@@ -449,106 +549,6 @@ createWnd PROC
 	
 	RET 
 createWnd ENDP
-
-;
-getPieceDC PROC
-;	@ Params:	eax - piece
-;	@ Return:	eax - piece DC handle
-	CMP al, NULL			; Empty square
-	JZ gotPieceDC
-	COMMENT @		; TODO: add back when more pieces available
-	CMP al, PIECE_WQUEEN
-	JZ getWQueenDC
-	@
-	getWQueenDC:
-		MOV eax, wQueenDC
-		JMP gotPieceDC
-
-	gotPieceDC:
-	RET
-getPieceDC ENDP
-
-;
-transCoordsToWnd PROC
-;	@ Params:	ax - x coordinate
-;				eax upper half - y coordinate
-;	@ Return:	eax - address of RECT
-	PUSH esi		; Save esi
-
-	; Get offset of RECT
-	; Conserves coords in ecx
-	MOV ecx, eax
-	AND eax, 0FFFFh		; Get x coordinate
-	DEC eax
-	MOV ebx, 8
-	MUL ebx
-	MOVZX ebx, cx
-	ADD eax, ebx
-	DEC eax
-	MOV ebx, SIZEOF RECT
-	MUL ebx
-	MOV esi, OFFSET updateRect
-	ADD esi, eax
-
-	; Get right and left sides of the square
-	MOVZX eax, cx
-	MOV ebx, sqrLen
-	MUL ebx
-	MOV (RECT PTR [esi]).right, eax
-	SUB eax, sqrLen
-	MOV (RECT PTR [esi]).left, eax
-
-	; Flip y coordinate to align with window coord layout
-	MOV eax, ecx
-	SHR eax, 16
-	NEG eax
-	ADD eax, 8
-	MOV ebx, sqrLen
-	MUL ebx
-	MOV (RECT PTR [esi]).top, eax
-	ADD eax, sqrLen
-	MOV (RECT PTR [esi]).bottom, eax
-
-	; Return address of RECT
-	MOV eax, esi
-	POP esi			; Restore esi
-	RET
-transCoordsToWnd ENDP
-
-;
-transCoordsToBoard PROC
-;	@ Params:	ax - x coordinate Wnd
-;				eax upper half - y coordinate Wnd
-;	@ Return:	ax - x coordinate board
-;				eax upper half - y coordinate board
-	; Save Wnd x coordinate in ecx
-	MOVZX ecx, ax
-
-	; Get board y coordinate
-	SHR eax, 16
-	MOV ebx, sqrLen
-	XOR edx, edx
-	DIV ebx
-	NEG eax
-	ADD eax, 8
-	SHL eax, 16
-
-	; Swap eax and ecx for division
-	PUSH eax
-	PUSH ecx
-	POP eax
-	POP ecx
-
-	; Get board x coordinate
-	XOR edx, edx
-	MOV ebx, sqrLen
-	DIV ebx
-	INC eax
-
-	; Pack x and y into eax
-	ADD eax, ecx
-	RET
-transCoordsToBoard ENDP
 
 ; Creates error popup window
 errWnd PROC
