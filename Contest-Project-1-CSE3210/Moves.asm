@@ -7,6 +7,10 @@ INCLUDE Board.inc
 
 PUBLIC MoveProc
 
+NULL EQU 0
+FALSE EQU 0
+TRUE EQU 1
+
 ; Structs
 ; Coordinate
 COORDSTRUCT STRUCT
@@ -28,17 +32,18 @@ EXTERNDEF prevHL:MOVESTRUCT
 
 .code
 MoveProc PROC
-	PUSH ecx		; Save ebx, ecx since they will be used in processing moves
+	PUSH edx		; Save ebx, ecx, edx since they will be used in processing moves
+	PUSH ecx		;
 	PUSH ebx		; 
 	
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
 	MOVZX eax, prevHL.coord.x		;
 	MOV bl, al						;
-	MOVZX ecx, curHL.coord.y		; store prevHL.coord as a word in cx
-	SHL ecx, 8						; shift into ch
+	MOVZX edx, curHL.coord.y		; store prevHL.coord as a word in cx
+	SHL edx, 8						; shift into ch
 	MOV ax, curHL.coord.x			;
-	MOV cl, al						;
+	MOV dl, al						;
 
 	MOV al, prevHL.piece
 	OR al, 20h		; Make lower case
@@ -81,13 +86,45 @@ MoveProc PROC
 	mvProcessed:
 	POP ebx			; Restore ebx, ecx
 	POP ecx			;
+	POP edx			;
 	RET
 MoveProc ENDP
 
 ; Pawn move
 pMove PROC
-	
+	; Get diff in coords
+	MOVZX eax, dx
+	SUB ax, bx
+	; Get piece
+	MOVZX ecx, curHL.piece
 
+	; Case: x coord diff - check for capture
+	CMP al, 0
+	JNZ pCapture
+
+	; Case: move 1 forward
+	CMP ah, 1
+	JZ fwd1			; Check fwd1 for white
+	CMP al, -1
+	JNZ fwd2		; Check fwd1 for black
+	
+	fwd1:
+	CMP cl, NULL
+	JZ valid
+
+	fwd2:
+		
+
+	pCapture:
+
+	valid:
+	MOV eax, TRUE
+	JMP pMvFound
+
+	invalid:
+	MOV eax, FALSE
+
+	pMvFound:
 	RET
 pMove ENDP
 

@@ -11,7 +11,7 @@ INCLUDELIB User32.lib	; Sources:	Textbook and https://learn.microsoft.com/en-us/
 INCLUDELIB Gdi32.lib	; Source:	https://learn.microsoft.com/en-us/windows/win32/gdi/windows-gdi
 INCLUDELIB Msimg32.lib	; Source:	https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-transparentblt
 
-;Global Constants
+; Global Constants
 NULL EQU 0
 FALSE EQU 0
 TRUE EQU 1
