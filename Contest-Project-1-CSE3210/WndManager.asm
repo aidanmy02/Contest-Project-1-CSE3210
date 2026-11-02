@@ -37,6 +37,9 @@ PAINTSTRUCT STRUCT
 	rgbReserved BYTE 32 DUP(NULL)	; reserveD
 PAINTSTRUCT ENDS
 
+EXTERNDEF curHL:MOVESTRUCT
+EXTERNDEF prevHL:MOVESTRUCT
+
 .data?
 ; Window Attributes
 classAtom DWORD ?		; From RegisterClassA
@@ -86,8 +89,6 @@ defaultRect RECT	<	0,\						; left
 
 ; For painting
 updateRect RECT 64 DUP(<>)
-curHL MOVESTRUCT <>
-prevHL MOVESTRUCT <,<NULL,NULL>,,>
 
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
@@ -96,6 +97,7 @@ paintParam PAINTSTRUCT <>
 wndName BYTE "Testing Testing 123", 0
 
 ; Params for GetMessage
+PUBLIC msg
 msg MSGSTRUCT <>
 
 ; Piece BMP Images Paths

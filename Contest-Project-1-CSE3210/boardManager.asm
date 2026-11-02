@@ -2,6 +2,8 @@ INCLUDE Chess.inc
 INCLUDE Board.inc
 
 PUBLIC board
+PUBLIC curHL
+PUBLIC prevHL
 
 .data
 ; Initialize board
@@ -9,6 +11,8 @@ board BOARDSTRUCT <>
 
 ; For initialization
 move MOVESTRUCT 64 DUP(<>)
+curHL MOVESTRUCT <>
+prevHL MOVESTRUCT <,<NULL,NULL>,,>
 
 numCols EQU 8
 numRows EQU 8

@@ -82,8 +82,13 @@ MOVESTRUCT STRUCT
 MOVESTRUCT ENDS
 
 MSGSTRUCT STRUCT
-	bpCode WORD ?
-	mv DWORD ?
+	hWnd DWORD ?
+	message DWORD ?
+	wParam DWORD ?
+	lParam DWORD ?
+	time DWORD ?
+	pt DWORD ?
+	lPrivate DWORD ?
 MSGSTRUCT ENDS
 
 EXTERNDEF move:MOVESTRUCT
@@ -91,8 +96,6 @@ EXTERNDEF hWndMain:DWORD
 
 ; For passing messages
 EXTERNDEF msg:MSGSTRUCT
-EXTERNDEF curHL:MOVESTRUCT
-EXTERNDEF prevHL:MOVESTRUCT
 
 ; Subroutine Prototypes
 BoardProc PROTO
