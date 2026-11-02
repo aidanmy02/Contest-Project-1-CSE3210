@@ -29,22 +29,22 @@ BoardProc PROC
 	MOV eax, (MOVESTRUCT PTR [esi]).uMsg
 	CMP eax, BP_INIT
 	JZ bpInit
-	CMP eax, BP_HL
-	JZ bpHL
-
+	CMP eax, BP_CONT
+	JZ bpCont
+	CMP eax, BP_COLOR
+	JZ bpColor
 	bpInit:
 		CALL InitBoard
 		INVOKE ExitThread,	NULL
 
-	bpHL:
+	bpCont:
 		MOV eax, (MOVESTRUCT PTR [esi]).coord
-		MOVZX ebx, ax
-		SHR eax, 16
-		MOV ecx, eax
 		CALL getSqrContent
 		MOV (MOVESTRUCT PTR [esi]).piece, al
 		JMP bpDone
 
+	bpColor:
+		
 	bpDone:
 	POP ebp
 	RET 4
@@ -78,18 +78,20 @@ InitBoard PROC
 			; Set y coordinate of board
 			MOV (MOVESTRUCT PTR [esi]).coord.y, cx		; ecx contains row
 
-			; Save values of ecx and edx
-			PUSH ebx
-			PUSH ecx
-
 			; Set piece
+			MOV eax, (MOVESTRUCT PTR [esi]).coord
 			CALL GetSqrContent
 			MOV (MOVESTRUCT PTR [esi]).piece, al
 
+
 			; Get square Color
+			MOV eax, (MOVESTRUCT PTR [esi]).coord
 			CALL GetSqrColor
 			MOV (MOVESTRUCT PTR [esi]).sqrColor, al
 			
+			; Save counters
+			PUSH ebx
+			PUSH ecx
 			; Save current address
 			PUSH esi
 
@@ -113,11 +115,19 @@ InitBoard PROC
 	RET
 InitBoard ENDP
 
+;
 GetSqrColor PROC
-	; ebx contains columns and ecx contains rows
-	MOV eax, ebx
-	ADD eax, ecx
-	
+;	@ Params:	ax - x coord
+;				eax upper half - y coord
+;	@ Return:	al - color code
+	; Save registers
+	PUSH ebx
+	PUSH ecx
+
+	MOVZX ebx, ax
+	SHR eax, 16
+	ADD eax, ebx
+
 	; If even, then white
 	TEST eax, 1
 	JZ whiteSqr
@@ -130,15 +140,27 @@ GetSqrColor PROC
 	MOV eax, WHITE
 
 	gotColor:
+	; Restor registers
+	POP ecx
+	POP ebx
 	RET
 GetSqrColor ENDP
 
 ;
 GetSqrContent PROC
-;	@ Params:	ecx - row coord
-;				ebx - column coord
+;	@ Params:	ax - x coord
+;				eax upper half - y coord
 ;
-;	@ Return:	eax - piece
+;	@ Return:	al - piece
+	; Save registers
+	PUSH ebx
+	PUSH ecx
+	PUSH edx
+
+	; Get coords out of eax
+	MOVZX ebx, ax
+	SHR eax, 16
+	MOV ecx, eax
 
 	; Get column offset
 	MOV eax, numCols
@@ -153,6 +175,11 @@ GetSqrContent PROC
 	; Get piece
 	ADD eax, OFFSET board
 	MOV al, [eax]
+
+	; Restore registers
+	POP edx
+	POP ecx
+	POP ebx
 	RET
 GetSqrContent ENDP
 END

@@ -339,6 +339,12 @@ clickHandler PROC
 ;	@Desc:	Determines the click case based on curHL and prevHL
 	CMP prevHL.coord, 0
 	JZ HLCurSqr
+	MOV eax, prevHL.coord
+	CMP eax, curHL.coord
+	JNZ unHLPrevSqr
+
+	unHLPrevSqr:
+
 
 	HLCurSqr:
 		MOV eax, OFFSET curHL
@@ -352,7 +358,7 @@ highlightSqr PROC
 		PUSH esi		; Save esi
 
 		MOV esi, eax
-		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_HL
+		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_CONT
 		MOV (MOVESTRUCT PTR [eax]).sqrColor, HL
 		PUSH eax
 		INVOKE BoardProc		; Gets piece for move
