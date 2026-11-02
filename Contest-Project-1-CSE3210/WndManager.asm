@@ -87,7 +87,7 @@ defaultRect RECT	<	0,\						; left
 ; For painting
 updateRect RECT 64 DUP(<>)
 curHL MOVESTRUCT <>
-prevHL MOVESTRUCT <>
+prevHL MOVESTRUCT <,<NULL,NULL>,,>
 
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
@@ -235,18 +235,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		MOV eax, wpLParam
 		CALL transCoordsToBoard
  		MOV curHL.coord, eax
-		MOV curHL.uMsg, BP_HL
-		MOV curHL.sqrColor, HL
-		MOV eax, OFFSET curHL
-		PUSH eax
-		INVOKE BoardProc
-		MOV eax, curHL.coord
-		CALL transCoordsToWnd
-
-		INVOKE PostMessageA,	hWndMain,\				; hWnd
-								WM_SQR,\				; uMsg
-								ADDR curHL,\				; wParam
-								NULL					; lParam
+		CALL clickHandler
 		JMP wpDone
 
 	wpPaint:
@@ -344,6 +333,38 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 	wpDone:
 	RET
 WndProc ENDP
+
+;
+clickHandler PROC
+;	@Desc:	Determines the click case based on curHL and prevHL
+	CMP prevHL.coord, 0
+	JZ HLCurSqr
+
+	HLCurSqr:
+		MOV eax, OFFSET curHL
+		CALL highlightSqr
+	RET
+clickHandler ENDP
+
+;
+highlightSqr PROC
+;	@ Params:	eax - offset to MOVESTRUCT with coords to be highlighted
+		PUSH esi		; Save esi
+
+		MOV esi, eax
+		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_HL
+		MOV (MOVESTRUCT PTR [eax]).sqrColor, HL
+		PUSH eax
+		INVOKE BoardProc		; Gets piece for move
+
+		INVOKE PostMessageA,	hWndMain,\				; hWnd
+								WM_SQR,\				; uMsg
+								esi,\					; wParam
+								NULL					; lParam
+		
+		POP esi		; Restore esi
+		RET
+highlightSqr ENDP
 
 ;
 getPieceDC PROC
