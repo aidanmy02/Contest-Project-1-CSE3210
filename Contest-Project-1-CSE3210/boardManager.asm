@@ -51,10 +51,25 @@ BoardProc PROC
 
 	bpMove:
 		CALL isValidMove
-		CMP al, FALSE
+		CMP al, FALSE		; Exit if not valid move
 		JZ bpDone
-		MOV al, prevHL.piece
+
+		; Move prevHL.piece into curHL.piece
+		MOVZX eax, prevHL.piece
 		MOV curHL.piece, al
+
+		; Change dest board content
+		PUSH eax
+		MOV eax, curHL.coord
+		CALL SetSqrContent
+
+		; Change source board content
+		XOR eax, eax
+		PUSH eax
+		MOV eax, prevHL.coord
+		CALL SetSqrContent
+
+		; Update window
 		MOV prevHL.piece, NULL
 		INVOKE SendMessageA,	hWndMain,\			; hWnd
 								WM_SQR,\			; uMsg
@@ -232,4 +247,51 @@ GetSqrContent PROC
 	POP ebx
 	RET
 GetSqrContent ENDP
+
+;
+SetSqrContent PROC
+;	@ Params:	ax - x coord
+;				eax upper half - y coord
+;				stack - piece
+;
+;	@ Return:	al - piece
+	PUSH ebp
+	MOV ebp, esp
+
+	; Save registers
+	PUSH esi
+	PUSH ebx
+	PUSH ecx
+	PUSH edx
+
+	; Get coords out of eax
+	MOVZX ebx, ax
+	SHR eax, 16
+	MOV ecx, eax
+
+	; Get column offset
+	MOV eax, numCols
+	DEC ebx			; 0-based index
+	XOR edx, edx
+	MUL ebx
+	INC ebx			; restore ebx to 1-based index
+	; Add row offset
+	ADD eax, ecx
+	DEC eax			; 0-based index
+
+	; Set piece
+	ADD eax, OFFSET board
+	MOV esi, eax
+	MOV al, [ebp + 8]
+	MOV [esi], al
+
+	; Restore registers
+	POP edx
+	POP ecx
+	POP ebx
+	POP esi
+	POP ebp
+	RET 4
+SetSqrContent ENDP
+
 END
