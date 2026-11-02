@@ -105,7 +105,7 @@ pMove PROC
 	; Case: move 1 forward
 	CMP ah, 1
 	JZ fwd1			; Check fwd1 for white
-	CMP al, -1
+	CMP ah, -1
 	JNZ fwd2		; Check fwd1 for black
 	
 	fwd1:

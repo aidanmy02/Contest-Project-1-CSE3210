@@ -50,6 +50,16 @@ BoardProc PROC
 
 	bpMove:
 		CALL isValidMove
+		CMP al, FALSE
+		JZ bpDone
+		MOV al, prevHL.piece
+		MOV curHL.piece, al
+		MOV prevHL.piece, NULL
+		INVOKE SendMessageA,	hWndMain,\			; hWnd
+								WM_SQR,\			; uMsg
+								ADDR prevHL,\		; wParam
+								NULL				; lParam
+		JMP bpDone
 
 	bpDone:
 	POP ebp
@@ -141,22 +151,19 @@ isValidMove PROC
 	MOV al, curHL.piece
 	CMP al, 'a'
 	JNB invalidMove
+	JMP validateMove
+
+	invalidMove:
+	MOV al, FALSE
+	JMP retMove
 
 	; Cur selection has valid contents for move
 	validateMove:
 	CALL MoveProc
-
-	; Valid Move
-	validMove:
-	MOV al, TRUE
-	JMP gotMove
-
-	invalidMove:
-	MOV al, FALSE
-
-	gotMove:
+	retMove:
 	RET
 isValidMove ENDP
+
 ;
 GetSqrColor PROC
 ;	@ Params:	ax - x coord
