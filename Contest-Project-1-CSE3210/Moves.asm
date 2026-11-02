@@ -28,9 +28,46 @@ EXTERNDEF prevHL:MOVESTRUCT
 
 .code
 MoveProc PROC
-	
+	MOV al, curHL.piece
+	OR al, 20h		; Make lower case
 
 	RET
 MoveProc ENDP
+
+; Pawn move
+pMove PROC
+
+	RET
+pMove ENDP
+
+; Rook move
+rMove PROC
+
+	RET
+rMove ENDP
+
+; Knight move
+nMove PROC
+
+	RET
+nMove ENDP
+
+; Bishop move
+bMove PROC
+
+	RET
+bMove ENDP
+
+; Queen move
+qMove PROC
+
+	RET
+qMove ENDP
+
+; King move
+kMove PROC
+
+	RET
+kMove ENDP
 
 END

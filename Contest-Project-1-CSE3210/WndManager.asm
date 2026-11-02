@@ -339,6 +339,18 @@ WndProc ENDP
 ;
 clickHandler PROC
 ;	@Desc:	Determines the click case based on curHL and prevHL
+	; Get contents of square
+	MOV curHL.uMsg, BP_CONT
+	MOV eax, OFFSET curHL
+	PUSH eax				; Push param
+	INVOKE BoardProc		; Gets piece for move
+
+	; Get color of square
+	MOV curHL.uMsg, BP_COLOR
+	MOV eax, OFFSET curHL
+	PUSH eax				; Push param
+	INVOKE BoardProc		; Gets piece for move
+
 	; Case no square selected before
 	CMP prevHL.coord, NULL
 	JZ HLCurSqr
@@ -355,7 +367,7 @@ clickHandler PROC
 	; Case square selected before
 	unHLPrevSqr:
 		MOV eax, OFFSET prevHL
-		CALL unHighlightSqr
+		CALL toggleHL
 
 	; Case deselecting previous highlight
 	MOV eax, prevHL.coord
@@ -363,8 +375,13 @@ clickHandler PROC
 	JZ clickDone
 
 	HLCurSqr:
+		MOVZX eax, curHL.sqrColor
+		PUSH eax		; Save sqrColor
+		MOV curHL.sqrColor, HL
 		MOV eax, OFFSET curHL
-		CALL highlightSqr
+		CALL toggleHL
+		POP eax
+		MOV curHL.sqrColor, al
 
 	clickDone:
 	; Move curHL into prevHL
@@ -376,44 +393,14 @@ clickHandler PROC
 clickHandler ENDP
 
 ;
-highlightSqr PROC
+toggleHL PROC
 ;	@ Params:	eax - offset to MOVESTRUCT with coords to be highlighted
-		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_CONT
-		MOV (MOVESTRUCT PTR [eax]).sqrColor, HL
-		PUSH eax		; Save address
-		PUSH eax		; Push param
-		INVOKE BoardProc		; Gets piece for move
-		POP eax
-
 		INVOKE SendMessageA,	hWndMain,\				; hWnd
 								WM_SQR,\				; uMsg
 								eax,\					; wParam
 								NULL					; lParam
-
 		RET
-highlightSqr ENDP
-
-;
-unHighlightSqr PROC
-;	@ Params:	eax - offset to MOVESTRUCT with coords to be highlighted
-		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_CONT
-		PUSH eax		; Save address
-		PUSH eax		; Push param
-		INVOKE BoardProc		; Gets piece for move
-		POP eax			; Return address
-		
-		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_COLOR
-		PUSH eax		; Save address
-		PUSH eax		; Push param
-		INVOKE BoardProc		; Gets color for move
-		POP eax			; Return address
-		INVOKE SendMessageA,	hWndMain,\				; hWnd
-								WM_SQR,\				; uMsg
-								eax,\					; wParam
-								NULL					; lParam
-		
-		RET
-unHighlightSqr ENDP
+toggleHL ENDP
 
 ;
 getPieceDC PROC

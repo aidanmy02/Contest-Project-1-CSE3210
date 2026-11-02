@@ -136,29 +136,30 @@ isValidMove PROC
 	; Check if cur selection is black or empty
 	MOV al, curHL.piece
 	CMP al, 'a'
-	JNB validCont
+	JNB validateMove
 	JMP invalidMove
 
 	prevBlack:
 	; Check if cur selection is white or empty
 	MOV al, curHL.piece
 	CMP al, 'Z'
-	JNA validCont
+	JNA validateMove
 	JMP invalidMove
 
 
 	; Cur selection has valid contents for move
-	validCont:
+	validateMove:
+	CALL MoveProc
 
 	; Valid Move
 	validMove:
 	MOV al, TRUE
-	JMP validatedMove
+	JMP gotMove
 
 	invalidMove:
 	MOV al, FALSE
 
-	validatedMove:
+	gotMove:
 	RET
 isValidMove ENDP
 ;
