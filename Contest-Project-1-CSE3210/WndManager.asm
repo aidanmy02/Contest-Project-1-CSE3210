@@ -337,40 +337,72 @@ WndProc ENDP
 ;
 clickHandler PROC
 ;	@Desc:	Determines the click case based on curHL and prevHL
+	; Case no square selected before
 	CMP prevHL.coord, 0
 	JZ HLCurSqr
-	MOV eax, prevHL.coord
-	CMP eax, curHL.coord
-	JNZ unHLPrevSqr
 
+	; Case square selected before
 	unHLPrevSqr:
+		MOV eax, OFFSET prevHL
+		CALL unHighlightSqr
 
+	; Case deselecting previous highlight
+	MOV eax, prevHL.coord
+	MOV prevHL.coord, NULL		; Prepare for transfer
+	CMP eax, curHL.coord
+	JZ clickDone
 
 	HLCurSqr:
 		MOV eax, OFFSET curHL
 		CALL highlightSqr
+
+		; Set the previous coord to current coord for next call
+		MOV eax, curHL.coord
+		MOV prevHL.coord, eax
+
+	clickDone:
 	RET
 clickHandler ENDP
 
 ;
 highlightSqr PROC
 ;	@ Params:	eax - offset to MOVESTRUCT with coords to be highlighted
-		PUSH esi		; Save esi
-
-		MOV esi, eax
 		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_CONT
 		MOV (MOVESTRUCT PTR [eax]).sqrColor, HL
-		PUSH eax
+		PUSH eax		; Save address
+		PUSH eax		; Push param
 		INVOKE BoardProc		; Gets piece for move
+		POP eax
 
 		INVOKE PostMessageA,	hWndMain,\				; hWnd
 								WM_SQR,\				; uMsg
-								esi,\					; wParam
+								eax,\					; wParam
 								NULL					; lParam
-		
-		POP esi		; Restore esi
+
 		RET
 highlightSqr ENDP
+
+;
+unHighlightSqr PROC
+;	@ Params:	eax - offset to MOVESTRUCT with coords to be highlighted
+		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_CONT
+		PUSH eax		; Save address
+		PUSH eax		; Push param
+		INVOKE BoardProc		; Gets piece for move
+		POP eax			; Return address
+		
+		MOV (MOVESTRUCT PTR [eax]).uMsg, BP_COLOR
+		PUSH eax		; Save address
+		PUSH eax		; Push param
+		INVOKE BoardProc		; Gets color for move
+		POP eax			; Return address
+		INVOKE PostMessageA,	hWndMain,\				; hWnd
+								WM_SQR,\				; uMsg
+								eax,\					; wParam
+								NULL					; lParam
+		
+		RET
+unHighlightSqr ENDP
 
 ;
 getPieceDC PROC

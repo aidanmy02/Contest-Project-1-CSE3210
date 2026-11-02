@@ -33,6 +33,7 @@ BoardProc PROC
 	JZ bpCont
 	CMP eax, BP_COLOR
 	JZ bpColor
+
 	bpInit:
 		CALL InitBoard
 		INVOKE ExitThread,	NULL
@@ -44,7 +45,11 @@ BoardProc PROC
 		JMP bpDone
 
 	bpColor:
-		
+		MOV eax, (MOVESTRUCT PTR [esi]).coord
+		CALL getSqrColor
+		MOV (MOVESTRUCT PTR [esi]).sqrColor, al
+		JMP bpDone
+
 	bpDone:
 	POP ebp
 	RET 4
