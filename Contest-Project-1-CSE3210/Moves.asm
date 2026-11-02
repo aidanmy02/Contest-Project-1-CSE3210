@@ -40,10 +40,15 @@ MoveProc PROC
 	SHL ebx, 8						; shift into bh
 	MOVZX eax, prevHL.coord.x		;
 	MOV bl, al						;
-	MOVZX edx, curHL.coord.y		; store prevHL.coord as a word in cx
-	SHL edx, 8						; shift into ch
+	MOVZX edx, curHL.coord.y		; store prevHL.coord as a word in dx
+	SHL edx, 8						; shift into dh
 	MOV ax, curHL.coord.x			;
 	MOV dl, al						;
+
+	MOVZX ecx, prevHL.piece			; store prev piece in ch and cur piece in cl
+	SHL ecx, 8						;
+	MOV al, curHL.piece				;
+	MOV cl, al						;
 
 	MOV al, prevHL.piece
 	OR al, 20h		; Make lower case
@@ -95,27 +100,44 @@ pMove PROC
 	; Get diff in coords
 	MOVZX eax, dx
 	SUB ax, bx
-	; Get piece
-	MOVZX ecx, curHL.piece
 
 	; Case: x coord diff - check for capture
 	CMP al, 0
 	JNZ pCapture
 
 	; Case: move 1 forward
-	CMP ah, 1
-	JZ fwd1			; Check fwd1 for white
-	CMP ah, -1
-	JNZ fwd2		; Check fwd1 for black
-	
-	fwd1:
-	CMP cl, NULL
-	JZ valid
+	CMP ah, 1		; Check fwd1 for white
+	JNZ fwd1B
+	CMP cl, NULL	; Check dest is empty
+	JNZ invalid
+	JMP validateWhite
+
+	fwd1B:
+	CMP ah, -1		; Check fwd1 for black
+	JNZ fwd2		
+	CMP cl, NULL	; Check dest is empty
+	JNZ invalid
+	JMP validateBlack
 
 	fwd2:
-		
+		CMP ah, 2
+		JNZ invalid
+		CMP ah, -2
+		JMP invalid
 
 	pCapture:
+		
+		JMP invalid
+
+	validateWhite:
+		CMP ch, WPAWN	; Check piece is white
+		JNZ invalid
+		JMP valid
+
+	validateBlack:
+		CMP ch, BPAWN	; Check piece is white
+		JNZ invalid
+		JMP valid
 
 	valid:
 	MOV eax, TRUE
