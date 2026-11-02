@@ -28,6 +28,18 @@ EXTERNDEF prevHL:MOVESTRUCT
 
 .code
 MoveProc PROC
+	PUSH ecx		; Save ebx, ecx since they will be used in processing moves
+	PUSH ebx		; 
+	
+	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
+	SHL ebx, 8						; shift into bh
+	MOVZX eax, prevHL.coord.x		;
+	MOV bl, al						;
+	MOVZX ecx, curHL.coord.y		; store prevHL.coord as a word in cx
+	SHL ecx, 8						; shift into ch
+	MOV ax, curHL.coord.x			;
+	MOV cl, al						;
+
 	MOV al, prevHL.piece
 	OR al, 20h		; Make lower case
 	CMP al, 'p'
@@ -67,11 +79,14 @@ MoveProc PROC
 	CALL pMove
 
 	mvProcessed:
+	POP ebx			; Restore ebx, ecx
+	POP ecx			;
 	RET
 MoveProc ENDP
 
 ; Pawn move
 pMove PROC
+	
 
 	RET
 pMove ENDP
