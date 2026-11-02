@@ -152,10 +152,12 @@
     <MASM Include="main.asm">
       <FileType>Document</FileType>
     </MASM>
+    <MASM Include="Moves.asm" />
     <MASM Include="Semaphore.asm" />
     <MASM Include="WndManager.asm" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Board.inc" />
     <None Include="Chess.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

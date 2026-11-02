@@ -30,9 +30,15 @@
     <MASM Include="Semaphore.asm">
       <Filter>Source Files</Filter>
     </MASM>
+    <MASM Include="Moves.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="Chess.inc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Board.inc">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
