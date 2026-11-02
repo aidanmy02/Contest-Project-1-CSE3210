@@ -338,8 +338,12 @@ WndProc ENDP
 clickHandler PROC
 ;	@Desc:	Determines the click case based on curHL and prevHL
 	; Case no square selected before
-	CMP prevHL.coord, 0
+	CMP prevHL.coord, NULL
 	JZ HLCurSqr
+	 
+	; Case possible move
+	CMP prevHL.piece, NULL
+	JZ unHLPrevSqr
 
 	; Case square selected before
 	unHLPrevSqr:
@@ -348,7 +352,6 @@ clickHandler PROC
 
 	; Case deselecting previous highlight
 	MOV eax, prevHL.coord
-	MOV prevHL.coord, NULL		; Prepare for transfer
 	CMP eax, curHL.coord
 	JZ clickDone
 
@@ -356,11 +359,12 @@ clickHandler PROC
 		MOV eax, OFFSET curHL
 		CALL highlightSqr
 
-		; Set the previous coord to current coord for next call
-		MOV eax, curHL.coord
-		MOV prevHL.coord, eax
-
 	clickDone:
+	; Move curHL into prevHL
+	MOV esi, OFFSET curHL
+	MOV edi, OFFSET prevHL
+	MOV ecx, SIZEOF MOVESTRUCT
+	REP MOVSB
 	RET
 clickHandler ENDP
 
