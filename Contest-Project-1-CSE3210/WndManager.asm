@@ -57,8 +57,9 @@ wndHeight DWORD ?
 hHeap DWORD ?
 hThread DWORD ?
 pid DWORD ?
-wSqr DWORD ?
-bSqr DWORD ?
+hWhiteBr DWORD ?
+hBlackBr DWORD ?
+hHLBr DWORD ?
 
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
@@ -95,9 +96,7 @@ defaultRect RECT	<	0,\						; left
 
 ; For painting
 updateRect RECT 64 DUP(<>)
-wSqrColor DWORD 0FFCFCFh
-bSqrColor DWORD 292817h
-transColor DWORD 0FFFFFFh
+clickMoveStruct MOVESTRUCT <>
 
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
@@ -158,6 +157,8 @@ IMAGE_BITMAP EQU 0		; uType				; Source: https://learn.microsoft.com/en-us/windo
 LR_LOADFROMFILE EQU 10h	; fuLoad			; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadimagea
 
 ; Window event codes
+; Sources:	https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-lbuttondown
+;			https://learn.microsoft.com/en-us/windows/win32/learnwin32/mouse-clicks
 WM_LBUTTONDOWN EQU 0201h
 
 .code
@@ -242,7 +243,18 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 	wpClick:
 		MOV eax, wpLParam
+		MOV clickMoveStruct.uMsg, WM_LBUTTONDOWN
 		CALL transCoordsToBoard
+		MOV clickMoveStruct.coord.x, ax
+		SHR eax, 16
+		MOV clickMoveStruct.coord.y, ax
+		MOV clickMoveStruct.piece, 0
+		MOV clickMoveStruct.sqrColor, 2
+
+		INVOKE PostMessageA,	hWndMain,\				; hWnd
+								WM_SQR,\				; uMsg
+								ADDR clickMoveStruct,\	; wParam
+								NULL					; lParam
 		JMP wpDone
 
 	wpPaint:
@@ -264,6 +276,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		JMP wpDone
 
 	wpSqr:
+		; 
 		; Get MOVESTRUCT address from wParam
 		MOV esi, wpWParam
 
@@ -272,10 +285,15 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		MOV al, (MOVESTRUCT PTR [esi]).sqrColor
 		CMP al, 0
 		JZ isWhiteSqr
-		MOV eax, bSqr
+		CMP al, 1
+		JZ isBlackSqr
+		MOV eax, hHLBr
 		JMP gotSqrColor
 		isWhiteSqr:
-			MOV eax, wSqr
+			MOV eax, hWhiteBr
+			JMP gotSqrColor
+		isBlackSqr:
+			MOV eax, hBlackBr
 
 		gotSqrColor:
 		; Save brush handle
@@ -312,7 +330,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 								0,\						; yoriginSrc
 								sqrLen,\				; wSrc
 								sqrLen,\				; hSrc
-								transColor				; crTransparent
+								COLOR_TRANS				; crTransparent
 
 		JMP wpDone
 
@@ -526,27 +544,14 @@ createWnd PROC
 								wQueenHBit				; hObject
 	MOV hReg, eax
 
-	INVOKE GetDC,				hWndMain				; hWnd
-	MOV hdc, eax
+	INVOKE CreateSolidBrush,	COLOR_WHITE				; color
+	MOV hWhiteBr, eax
 
-	INVOKE TransparentBlt,		hdc,\					; hdcDest
-								0,\						; xoriginDest
-								0,\						; yoriginDest
-								sqrLen,\				; wDest
-								sqrLen,\				; hDest
-								wQueenDC,\				; hdcSrc
-								0,\						; xoriginSrc
-								0,\						; yoriginSrc
-								sqrLen,\				; wSrc
-								sqrLen,\				; hSrc
-								transColor				; crTransparent
+	INVOKE CreateSolidBrush,	COLOR_BLACK				; color
+	MOV hBlackBr, eax
 
-	INVOKE CreateSolidBrush,	wSqrColor				; color
-	MOV wSqr, eax
-
-	INVOKE CreateSolidBrush,	bSqrColor				; color
-	MOV bSqr, eax
-	
+	INVOKE CreateSolidBrush,	COLOR_HL
+	MOV hHLBr, eax
 	RET 
 createWnd ENDP
 
