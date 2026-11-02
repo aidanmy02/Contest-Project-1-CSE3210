@@ -15,7 +15,7 @@ BOARDSTRUCT ENDS
 ; Initialize board
 board BOARDSTRUCT <>
 
-; For message passing
+; For initialization
 move MOVESTRUCT 64 DUP(<>)
 
 numCols EQU 8
@@ -23,14 +23,23 @@ numRows EQU 8
 
 .code
 BoardProc PROC
-	MOV eax, move.uMsg
-	CMP eax, BP_INIT
+	PUSH ebp
+	MOV ebp, esp
+	MOV esi, [ebp + 8]		; msg
+	MOV ax, (MSGSTRUCT PTR [esi]).bpCode
+	CMP ax, BP_INIT
 	JZ bpInit
-	
+	CMP ax, BP_CLICK
+	JZ bpClick
+
 	bpInit:
 		CALL InitBoard
 		INVOKE ExitThread,	NULL
+	bpClick:
+		
+
 	bpDone:
+	POP ebp
 	RET
 BoardProc ENDP
 

@@ -37,16 +37,6 @@ PAINTSTRUCT STRUCT
 	rgbReserved BYTE 32 DUP(NULL)	; reserveD
 PAINTSTRUCT ENDS
 
-MSGSTRUCT STRUCT
-	hWnd DWORD ?
-	message DWORD ?
-	wParam DWORD ?
-	lParam DWORD ?
-	time DWORD ?
-	point DWORD ?
-	lPrivate DWORD ?
-MSGSTRUCT ENDS
-
 .data?
 ; Window Attributes
 classAtom DWORD ?		; From RegisterClassA
@@ -96,7 +86,8 @@ defaultRect RECT	<	0,\						; left
 
 ; For painting
 updateRect RECT 64 DUP(<>)
-clickMoveStruct MOVESTRUCT <>
+curHL MOVESTRUCT <>
+prevHL MOVESTRUCT <>
 
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
@@ -182,12 +173,11 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 	gotHandle:
 	MOV WndClass.hInstance, eax
 	CALL createWnd
-
-	MOV move.uMsg, BP_INIT
+	MOV msg.bpCode, BP_INIT
 	INVOKE CreateThread,	NULL,\				; lpThreadAttributes
 							NULL,\				; dwStackSize
 							ADDR BoardProc,\	; lpStartAddress
-							NULL,\				; lpParameter
+							ADDR msg,\			; lpParameter
 							NULL,\				; dwCreationFlags
 							ADDR pid			; lpThreadId
 	MOV hThread, eax
@@ -243,17 +233,17 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 	wpClick:
 		MOV eax, wpLParam
-		MOV clickMoveStruct.uMsg, WM_LBUTTONDOWN
+		MOV curHL.uMsg, WM_LBUTTONDOWN
 		CALL transCoordsToBoard
-		MOV clickMoveStruct.coord.x, ax
+		MOV curHL.coord.x, ax
 		SHR eax, 16
-		MOV clickMoveStruct.coord.y, ax
-		MOV clickMoveStruct.piece, 0
-		MOV clickMoveStruct.sqrColor, 2
+		MOV curHL.coord.y, ax
+		MOV curHL.piece, 0
+		MOV curHL.sqrColor, 2
 
 		INVOKE PostMessageA,	hWndMain,\				; hWnd
 								WM_SQR,\				; uMsg
-								ADDR clickMoveStruct,\	; wParam
+								ADDR curHL,\	; wParam
 								NULL					; lParam
 		JMP wpDone
 
