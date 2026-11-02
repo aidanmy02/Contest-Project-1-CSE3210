@@ -173,11 +173,11 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 	gotHandle:
 	MOV WndClass.hInstance, eax
 	CALL createWnd
-	MOV msg.bpCode, BP_INIT
+	MOV move.uMsg, BP_INIT
 	INVOKE CreateThread,	NULL,\				; lpThreadAttributes
 							NULL,\				; dwStackSize
 							ADDR BoardProc,\	; lpStartAddress
-							ADDR msg,\			; lpParameter
+							ADDR move,\			; lpParameter
 							NULL,\				; dwCreationFlags
 							ADDR pid			; lpThreadId
 	MOV hThread, eax
@@ -233,17 +233,19 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 	wpClick:
 		MOV eax, wpLParam
-		MOV curHL.uMsg, WM_LBUTTONDOWN
 		CALL transCoordsToBoard
-		MOV curHL.coord.x, ax
-		SHR eax, 16
-		MOV curHL.coord.y, ax
-		MOV curHL.piece, 0
-		MOV curHL.sqrColor, 2
+ 		MOV curHL.coord, eax
+		MOV curHL.uMsg, BP_HL
+		MOV curHL.sqrColor, HL
+		MOV eax, OFFSET curHL
+		PUSH eax
+		INVOKE BoardProc
+		MOV eax, curHL.coord
+		CALL transCoordsToWnd
 
 		INVOKE PostMessageA,	hWndMain,\				; hWnd
 								WM_SQR,\				; uMsg
-								ADDR curHL,\	; wParam
+								ADDR curHL,\				; wParam
 								NULL					; lParam
 		JMP wpDone
 
@@ -273,15 +275,20 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		; Get square color
 		XOR eax, eax
 		MOV al, (MOVESTRUCT PTR [esi]).sqrColor
-		CMP al, 0
+
+		CMP al, WHITE
 		JZ isWhiteSqr
-		CMP al, 1
+
+		CMP al, BLACK
 		JZ isBlackSqr
+
 		MOV eax, hHLBr
 		JMP gotSqrColor
+
 		isWhiteSqr:
 			MOV eax, hWhiteBr
 			JMP gotSqrColor
+
 		isBlackSqr:
 			MOV eax, hBlackBr
 

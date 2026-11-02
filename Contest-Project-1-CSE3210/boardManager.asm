@@ -25,22 +25,29 @@ numRows EQU 8
 BoardProc PROC
 	PUSH ebp
 	MOV ebp, esp
-	MOV esi, [ebp + 8]		; msg
-	MOV ax, (MSGSTRUCT PTR [esi]).bpCode
-	CMP ax, BP_INIT
+	MOV esi, [ebp + 8]		; MOVESTRUCT
+	MOV eax, (MOVESTRUCT PTR [esi]).uMsg
+	CMP eax, BP_INIT
 	JZ bpInit
-	CMP ax, BP_CLICK
-	JZ bpClick
+	CMP eax, BP_HL
+	JZ bpHL
 
 	bpInit:
 		CALL InitBoard
 		INVOKE ExitThread,	NULL
-	bpClick:
-		
+
+	bpHL:
+		MOV eax, (MOVESTRUCT PTR [esi]).coord
+		MOVZX ebx, ax
+		SHR eax, 16
+		MOV ecx, eax
+		CALL getSqrContent
+		MOV (MOVESTRUCT PTR [esi]).piece, al
+		JMP bpDone
 
 	bpDone:
 	POP ebp
-	RET
+	RET 4
 BoardProc ENDP
 
 InitBoard PROC
@@ -116,11 +123,11 @@ GetSqrColor PROC
 	JZ whiteSqr
 
 	; Else, black
-	MOV eax, 1
+	MOV eax, BLACK
 	JMP gotColor
 
 	whiteSqr:
-	XOR eax, eax
+	MOV eax, WHITE
 
 	gotColor:
 	RET
