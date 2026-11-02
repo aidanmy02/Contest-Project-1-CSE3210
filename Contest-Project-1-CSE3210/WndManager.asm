@@ -341,9 +341,14 @@ clickHandler PROC
 	CMP prevHL.coord, NULL
 	JZ HLCurSqr
 	 
-	; Case possible move
+	; Case possible move, jump if not move
 	CMP prevHL.piece, NULL
 	JZ unHLPrevSqr
+
+	MOV prevHL.uMsg, BP_MOVE
+	MOV eax, OFFSET prevHL
+	PUSH eax
+	CALL BoardProc
 
 	; Case square selected before
 	unHLPrevSqr:

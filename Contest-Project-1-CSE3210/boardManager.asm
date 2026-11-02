@@ -27,12 +27,14 @@ BoardProc PROC
 	MOV ebp, esp
 	MOV esi, [ebp + 8]		; MOVESTRUCT
 	MOV eax, (MOVESTRUCT PTR [esi]).uMsg
-	CMP eax, BP_INIT
-	JZ bpInit
 	CMP eax, BP_CONT
 	JZ bpCont
 	CMP eax, BP_COLOR
 	JZ bpColor
+	CMP eax, BP_MOVE
+	JZ bpMove
+	CMP eax, BP_INIT
+	JZ bpInit
 
 	bpInit:
 		CALL InitBoard
@@ -49,6 +51,9 @@ BoardProc PROC
 		CALL getSqrColor
 		MOV (MOVESTRUCT PTR [esi]).sqrColor, al
 		JMP bpDone
+
+	bpMove:
+		CALL isValidMove
 
 	bpDone:
 	POP ebp
@@ -120,6 +125,13 @@ InitBoard PROC
 	RET
 InitBoard ENDP
 
+;
+isValidMove PROC
+;	@ Return:	al - True if valid, else false
+
+
+	RET
+isValidMove ENDP
 ;
 GetSqrColor PROC
 ;	@ Params:	ax - x coord
