@@ -374,7 +374,7 @@ highlightSqr PROC
 		INVOKE BoardProc		; Gets piece for move
 		POP eax
 
-		INVOKE PostMessageA,	hWndMain,\				; hWnd
+		INVOKE SendMessageA,	hWndMain,\				; hWnd
 								WM_SQR,\				; uMsg
 								eax,\					; wParam
 								NULL					; lParam
@@ -396,7 +396,7 @@ unHighlightSqr PROC
 		PUSH eax		; Push param
 		INVOKE BoardProc		; Gets color for move
 		POP eax			; Return address
-		INVOKE PostMessageA,	hWndMain,\				; hWnd
+		INVOKE SendMessageA,	hWndMain,\				; hWnd
 								WM_SQR,\				; uMsg
 								eax,\					; wParam
 								NULL					; lParam
