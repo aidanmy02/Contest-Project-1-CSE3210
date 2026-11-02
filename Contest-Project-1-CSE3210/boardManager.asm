@@ -6,6 +6,9 @@ PUBLIC curHL
 PUBLIC prevHL
 PUBLIC GetSqrContent
 
+numCols EQU 8
+numRows EQU 8
+
 .data
 ; Initialize board
 board BOARDSTRUCT <>
@@ -15,8 +18,7 @@ move MOVESTRUCT 64 DUP(<>)
 curHL MOVESTRUCT <>
 prevHL MOVESTRUCT <,<NULL,NULL>,,>
 
-numCols EQU 8
-numRows EQU 8
+isWhiteMove BYTE TRUE		; BOOL: Game starts with white move
 
 .code
 BoardProc PROC
@@ -50,6 +52,11 @@ BoardProc PROC
 		JMP bpDone
 
 	bpMove:
+		MOVZX eax, prevHL.piece
+		CALL isWhitePiece
+		CMP al, isWhiteMove
+		JNZ bpDone
+
 		CALL isValidMove
 		CMP al, FALSE		; Exit if not valid move
 		JZ bpDone
@@ -75,6 +82,10 @@ BoardProc PROC
 								WM_SQR,\			; uMsg
 								ADDR prevHL,\		; wParam
 								NULL				; lParam
+
+		; Next player's move
+		MOV al, TRUE
+		XOR isWhiteMove, al
 		JMP bpDone
 
 	bpDone:
@@ -248,6 +259,22 @@ GetSqrContent PROC
 	POP ebx
 	RET
 GetSqrContent ENDP
+
+;
+isWhitePiece PROC
+;	@ Params:	eax - piece
+;	@ Ret:		eax - true if piece is white, false if black
+	CMP al, 'a'
+	JNB blackPiece
+	
+	MOV eax, TRUE
+	JMP gotPieceColor
+
+	blackPiece:
+	MOV eax, FALSE
+	gotPieceColor:
+	RET
+isWhitePiece ENDP
 
 ;
 SetSqrContent PROC
