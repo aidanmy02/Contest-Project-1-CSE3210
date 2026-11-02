@@ -127,7 +127,7 @@ pMove PROC
 	fwd2W:
 	CMP ah, 2		; Check fwd2 for white
 	JNZ fwd2B
-	CMP bh, 2
+	CMP bh, 2		; Check row validity
 	JNZ invalid
 	CMP cl, NULL	; Check dest is empty
 	PUSH eax
@@ -141,9 +141,18 @@ pMove PROC
 	JMP validateWhite
 
 	fwd2B:
-	CMP ah, -1		; Check fwd1 for black
-	JNZ invalid		
+	CMP ah, -2		; Check fwd2 for black
+	JNZ invalid
+	CMP bh, 7		; Check row validity
+	JNZ invalid
 	CMP cl, NULL	; Check dest is empty
+	PUSH eax
+	MOV eax, prevHL.coord
+	SUB eax, 10000h	; Sub 1 to y coord
+	CALL GetSqrContent
+	MOVZX esi, al
+	POP eax
+	CMP esi, NULL
 	JNZ invalid
 	JMP validateBlack
 
