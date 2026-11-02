@@ -4,6 +4,7 @@
 OPTION PROC:PRIVATE
 
 INCLUDE Board.inc
+BoardProc PROTO
 
 PUBLIC MoveProc
 
@@ -32,7 +33,9 @@ EXTERNDEF prevHL:MOVESTRUCT
 
 .code
 MoveProc PROC
-	PUSH edx		; Save ebx, ecx, edx since they will be used in processing moves
+
+	PUSH esi		; Save ebx, ecx, edx, esi since they will be used in processing moves
+	PUSH edx		;
 	PUSH ecx		;
 	PUSH ebx		; 
 	
@@ -92,6 +95,7 @@ MoveProc PROC
 	POP ebx			; Restore ebx, ecx
 	POP ecx			;
 	POP edx			;
+	POP esi			;
 	RET
 MoveProc ENDP
 
@@ -114,16 +118,34 @@ pMove PROC
 
 	fwd1B:
 	CMP ah, -1		; Check fwd1 for black
-	JNZ fwd2		
+	JNZ fwd2W		
 	CMP cl, NULL	; Check dest is empty
 	JNZ invalid
 	JMP validateBlack
 
-	fwd2:
-		CMP ah, 2
-		JNZ invalid
-		CMP ah, -2
-		JMP invalid
+	; Case: move 2 forward
+	fwd2W:
+	CMP ah, 2		; Check fwd2 for white
+	JNZ fwd2B
+	CMP bh, 2
+	JNZ invalid
+	CMP cl, NULL	; Check dest is empty
+	PUSH eax
+	MOV eax, prevHL.coord
+	ADD eax, 10000h	; Add 1 to y coord
+	CALL GetSqrContent
+	MOVZX esi, al
+	POP eax
+	CMP esi, NULL
+	JNZ invalid
+	JMP validateWhite
+
+	fwd2B:
+	CMP ah, -1		; Check fwd1 for black
+	JNZ invalid		
+	CMP cl, NULL	; Check dest is empty
+	JNZ invalid
+	JMP validateBlack
 
 	pCapture:
 		

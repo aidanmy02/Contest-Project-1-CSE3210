@@ -4,6 +4,7 @@ INCLUDE Board.inc
 PUBLIC board
 PUBLIC curHL
 PUBLIC prevHL
+PUBLIC GetSqrContent
 
 .data
 ; Initialize board
