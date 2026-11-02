@@ -128,8 +128,41 @@ InitBoard ENDP
 ;
 isValidMove PROC
 ;	@ Return:	al - True if valid, else false
+	; Check if prev selection was white
+	MOVZX eax, prevHL.piece
+	CMP al, 'Z'
+	JNA prevWhite
+	
+	; Else black
+	JMP prevBlack
+
+	prevWhite:
+	; Check if cur selection is black or empty
+	MOV al, curHL.piece
+	CMP al, 'a'
+	JNB validCont
+	JMP invalidMove
+
+	prevBlack:
+	; Check if cur selection is white or empty
+	MOV al, curHL.piece
+	CMP al, 'Z'
+	JNA validCont
+	JMP invalidMove
 
 
+	; Cur selection has valid contents for move
+	validCont:
+
+	; Valid Move
+	validMove:
+	MOV al, TRUE
+	JMP validatedMove
+
+	invalidMove:
+	MOV al, FALSE
+
+	validatedMove:
 	RET
 isValidMove ENDP
 ;
