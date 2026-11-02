@@ -166,8 +166,9 @@ isValidMove PROC
 	; Check if cur selection is black or empty
 	MOV al, curHL.piece
 	CMP al, 'a'
-	JNB invalidMove
-	JMP validateMove
+	JNB validateMove
+	CMP al, NULL
+	JZ validateMove
 
 	invalidMove:
 	MOV al, FALSE

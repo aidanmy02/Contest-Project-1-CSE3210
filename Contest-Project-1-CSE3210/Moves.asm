@@ -105,60 +105,74 @@ pMove PROC
 	MOVZX eax, dx
 	SUB ax, bx
 
-	; Case: x coord diff - check for capture
-	CMP al, 0
-	JNZ pCapture
-
 	; Case: move 1 forward
 	CMP ah, 1		; Check fwd1 for white
 	JNZ fwd1B
+	CMP al, 0		; Check if stays in column
+	JNZ captW
 	CMP cl, NULL	; Check dest is empty
 	JNZ invalid
 	JMP validateWhite
 
 	fwd1B:
 	CMP ah, -1		; Check fwd1 for black
-	JNZ fwd2W		
+	JNZ fwd2W
+	CMP al, 0		; Check if stays in column
+	JNZ captB
 	CMP cl, NULL	; Check dest is empty
 	JNZ invalid
 	JMP validateBlack
 
 	; Case: move 2 forward
 	fwd2W:
-	CMP ah, 2		; Check fwd2 for white
-	JNZ fwd2B
-	CMP bh, 2		; Check row validity
-	JNZ invalid
-	CMP cl, NULL	; Check dest is empty
-	PUSH eax
-	MOV eax, prevHL.coord
-	ADD eax, 10000h	; Add 1 to y coord
-	CALL GetSqrContent
-	MOVZX esi, al
-	POP eax
-	CMP esi, NULL
-	JNZ invalid
-	JMP validateWhite
+		CMP ah, 2		; Check fwd2 for white
+		JNZ fwd2B
+		CMP bh, 2		; Check row validity
+		JNZ invalid
+		CMP cl, NULL	; Check dest is empty
+		PUSH eax
+		MOV eax, prevHL.coord
+		ADD eax, 10000h	; Add 1 to y coord
+		CALL GetSqrContent
+		MOVZX esi, al
+		POP eax
+		CMP esi, NULL
+		JNZ invalid
+		JMP validateWhite
 
 	fwd2B:
-	CMP ah, -2		; Check fwd2 for black
-	JNZ invalid
-	CMP bh, 7		; Check row validity
-	JNZ invalid
-	CMP cl, NULL	; Check dest is empty
-	PUSH eax
-	MOV eax, prevHL.coord
-	SUB eax, 10000h	; Sub 1 to y coord
-	CALL GetSqrContent
-	MOVZX esi, al
-	POP eax
-	CMP esi, NULL
-	JNZ invalid
-	JMP validateBlack
+		CMP ah, -2		; Check fwd2 for black
+		JNZ invalid
+		CMP bh, 7		; Check row validity
+		JNZ invalid
+		CMP cl, NULL	; Check dest is empty
+		PUSH eax
+		MOV eax, prevHL.coord
+		SUB eax, 10000h	; Sub 1 to y coord
+		CALL GetSqrContent
+		MOVZX esi, al
+		POP eax
+		CMP esi, NULL
+		JNZ invalid
+		JMP validateBlack
 
-	pCapture:
-		
-		JMP invalid
+	captW:
+		CMP al, 1			; Pawn takes right
+		JG invalid
+		CMP al, -1			; Pawn takes left
+		JL invalid
+		CMP cl, NULL		; Invalid if no piece in square
+		JZ invalid
+		JMP validateWhite
+	
+	captB:
+		CMP al, 1			; Pawn takes right
+		JG invalid
+		CMP al, -1			; Pawn takes left
+		JL invalid
+		CMP cl, NULL		; Invalid if no piece in square
+		JZ invalid
+		JMP validateBlack
 
 	validateWhite:
 		CMP ch, WPAWN	; Check piece is white
