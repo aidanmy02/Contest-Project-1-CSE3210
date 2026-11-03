@@ -206,13 +206,48 @@ rMove PROC
 	SUB al, bl
 	SUB ah, bh
 
-	CMP al, NULL		; Check if prevHL and curHL are in same column or row
-	JZ checkSqrsR		;
-	CMP ah, NULL		;
-	JNZ invalidR		;
-	
-	checkSqrsR:
+	CMP al, NULL			; Check if move is vertical
+	JZ checkVerticalR
+	CMP ah, NULL			; Check if move is horizontal
+	JNZ invalidR
+	CMP al, NULL			; If horizontal, get abs value of diff between source and dest
+	JNL gotAbsXR			;
+	NEG al					;
+	gotAbsXR:				;
 
+	; Vertical check that all squares between source and dest are empty
+	checkVerticalR:
+		CMP ah, NULL		; If positive diff, rook moves up
+		JNL setIncR			;
+
+		MOV ebx, 10000h		; Negtive, set coord to decrement
+		NEG ebx				;
+		NEG ah				; Get abs value of diff
+		JMP setDecR
+
+		; Sets loop to increment
+		setIncR:
+		MOV ebx, 10000h
+		JMP initLoopR
+
+		setDecR:
+		MOV ebx, 10000h			; Decrement y by 1
+		NEG ebx					;
+
+		initLoopR:
+		MOV edx, prevHL.coord	; Start at next sqr after prevHL
+		MOVZX ecx, ah			; Use diff to loop check sqrs between source and dest
+
+		startLoopR:
+			LOOP checkLoopR
+			JMP validR
+		checkLoopR:
+			ADD edx, ebx
+			MOV eax, edx
+			CALL GetSqrContent
+			CMP al, NULL
+			JNZ invalidR
+			JMP startLoopR
 
 	validR:
 	MOV eax, TRUE
@@ -233,15 +268,15 @@ nMove PROC
 	SUB ah, bh
 
 	CMP al, NULL			; Get abs value of coords
-	JNL gotAbsXCoord		;
+	JNL gotAbsXN		;
 	NEG al					;
 							;
-	gotAbsXCoord:			;
+	gotAbsXN:			;
 		CMP ah, NULL		;
-		JNL gotAbsYCoord	;
+		JNL gotAbsYN	;
 		NEG ah				;
 
-	gotAbsYCoord:
+	gotAbsYN:
 		CMP al, 1			; If x diff = 1, check y diff = 2
 		JZ checkYN
 		CMP ah, 1			; If x diff and y diff not 1, invalid
