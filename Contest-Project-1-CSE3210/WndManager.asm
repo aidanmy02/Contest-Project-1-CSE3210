@@ -93,6 +93,7 @@ updateRect RECT 64 DUP(<>)
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
 
+; TODO: figure out name
 ; Params for CreateWindowExA
 wndName BYTE "Testing Testing 123", 0
 

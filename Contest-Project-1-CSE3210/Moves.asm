@@ -3,19 +3,15 @@ INCLUDE Chess.inc
 GetSqrContent PROTO
 
 PUBLIC MoveProc
-
-NULL EQU 0
-FALSE EQU 0
-TRUE EQU 1
+PUBLIC prevMove
 
 EXTERN board:BOARDSTRUCT
 EXTERNDEF curHL:MOVESTRUCT
 EXTERNDEF prevHL:MOVESTRUCT
 
 .data
-prevFwd2 COORDSTRUCT <>
+prevMove MOVESTRUCT <>
 isFwd2 BYTE FALSE
-isEnPassant BYTE FALSE
 
 .code
 MoveProc PROC
@@ -23,8 +19,6 @@ MoveProc PROC
 	PUSH edx		;
 	PUSH ecx		;
 	PUSH ebx		; 
-	
-	MOV isFwd2, FALSE				; Set to false for check at end
 
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
@@ -57,39 +51,40 @@ MoveProc PROC
 
 	kingCheck:
 	CALL kMove
-	JMP mvProcessed
+	JMP mvCheck
 
 	queenCheck:
 	CALL qMove
-	JMP mvProcessed
+	JMP mvCheck
 
 	bishopCheck:
 	CALL bMove
-	JMP mvProcessed
+	JMP mvCheck
 
 	knightCheck:
 	CALL nMove
-	JMP mvProcessed
+	JMP mvCheck
 
 	rookCheck:
 	CALL rMove
-	JMP mvProcessed
+	JMP mvCheck
 
 	pawnCheck:
 	CALL pMove
+	JMP mvCheck
 
-	mvProcessed:
-	TEST al, FALSE
-	JZ enPassantProcessed
-	PUSH eax
-	MOV al, isFwd2			; Check if a forward 2 move was made for pawn
+	mvCheck:
 	CMP al, TRUE
-	JZ enPassantProcessed
-	MOV DWORD PTR prevFwd2, 0
-
-	enPassantProcessed:
-	POP eax
-	POP ebx			; Restore ebx, ecx
+	JNZ mvDone
+	MOV esi, OFFSET curHL			; Save new position in prevMove
+	MOV edi, OFFSET prevMove		;
+	MOV ecx, SIZEOF MOVESTRUCT		;
+	REP MOVSB						;
+	MOV bl, prevHL.piece
+	MOV prevMove.piece, bl			; Save moved piece in prevMove
+	
+	mvDone:
+	POP ebx			; Restore registers
 	POP ecx			;
 	POP edx			;
 	POP esi			;
@@ -148,11 +143,8 @@ pMove PROC
 		POP eax
 		CMP esi, NULL		; Check if empty
 		JNZ invalid
-		MOV eax, curHL.coord			; Save new position in prevFwd2 if valid Fwd2 move
-		MOV DWORD PTR prevFwd2, eax		;
-		MOV al, TRUE					;
-		MOV isFwd2, al					;
-		JMP valid
+		MOV isFwd2, TRUE	; Fwd2 move was made
+		JMP validFwd2
 
 	validateWhite:
 		CMP ch, WPAWN
@@ -174,32 +166,37 @@ pMove PROC
 		JMP valid
 
 	enPassant:
-		MOVZX eax, prevFwd2.x	; Check if previous move was fwd2
-		CMP eax, NULL
-		JZ invalid
-		SUB ax, prevHL.coord.x
-		CMP ax, 1			; Check if prevHL and prevFwd2 are next to each other
-		JG invalid			;
-		CMP ax, -1			;
-		JL invalid			;
-		MOV ax, prevFwd2.x		; Check if prevFwd2 and curHL are in the same column
-		CMP ax, curHL.coord.x	;
+		MOV al, prevMove.piece
+		OR al, 20h				; Make lower case
+		CMP al, 'p'				; Check if previous move was a pawn move
 		JNZ invalid
-		MOVZX eax, prevFwd2.y
-		CMP ax, prevHL.coord.y	; Check if prevHL y coord is same as prevFwd2 coord
+		CMP isFwd2, TRUE		; Check if previous move was Fwd 2
 		JNZ invalid
-		MOV eax, TRUE
-		MOV isEnPassant, al
+		MOVZX eax, prevMove.coord.y
+		CMP ax, prevHL.coord.y	; Check if prevHL y coord is same as prevMove coord
+		JNZ invalid
+		MOV ax, prevMove.coord.x
+		CMP ax, curHL.coord.x	; Check if prevMove and curHL are in the same column
+		JNZ invalid
+		
+		MOV prevMove.piece, NULL
+		MOV prevMove.uMsg, BP_ENPASSANT
+		MOV eax, OFFSET prevMove
+		PUSH eax
+		CALL BoardProc
 		JMP valid
 
 	valid:
-	MOV eax, TRUE
-	JMP pMvFound
+		MOV isFwd2, FALSE
+	validFwd2:
+		MOV eax, TRUE
+		JMP pMvFound
 
 	invalid:
 	MOV eax, FALSE
 
 	pMvFound:
+	AND isFwd2, al
 	RET
 pMove ENDP
 

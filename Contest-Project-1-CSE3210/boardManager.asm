@@ -1,10 +1,11 @@
 INCLUDE Chess.inc
-INCLUDE Board.inc
 
 PUBLIC board
 PUBLIC curHL
 PUBLIC prevHL
 PUBLIC GetSqrContent
+
+EXTERN MoveProc:PROTO
 
 numCols EQU 8
 numRows EQU 8
@@ -34,6 +35,8 @@ BoardProc PROC
 	JZ bpMove
 	CMP eax, BP_INIT
 	JZ bpInit
+	CMP eax, BP_ENPASSANT
+	JZ bpEnPassant
 
 	bpInit:
 		CALL InitBoard
@@ -86,6 +89,17 @@ BoardProc PROC
 		; Next player's move
 		MOV al, TRUE
 		XOR isWhiteMove, al
+		JMP bpDone
+
+	bpEnPassant:
+		; MoveProc sets square piece to NULL
+		PUSH NULL
+		MOV eax, (MOVESTRUCT PTR [esi]).coord
+		CALL SetSqrContent
+		INVOKE SendMessageA,	hWndMain,\
+								WM_SQR,\
+								esi,\
+								NULL
 		JMP bpDone
 
 	bpDone:
