@@ -67,7 +67,7 @@ className BYTE "Wnd",0
 
 ; Params for RegisterClassA
 WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
-						CS_NOCLOSE,\			; style
+						NULL,\					; style
 						OFFSET WndProc,\		; lpfnWndProc
 						NULL,\					; cbClsExtra
 						NULL,\					; cbWndExtra
@@ -135,7 +135,6 @@ ERR_GETMSG EQU 6
 ERR_DISPMSG EQU 7
 
 ; WNDCLASSEXA Codes
-CS_NOCLOSE EQU 0200H	; style				; Source: http://learn.microsoft.com/en-us/windows/win32/winmsg/window-class-styles
 COLOR_WINDOW EQU 5		; hbrBackground		; Source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolor
 
 ; LoadCursorA Codes
@@ -323,7 +322,7 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		JMP wpDone
 
 	wpDestroy:
-		INVOKE DestroyWindow,	hWnd			; hWnd
+		INVOKE ExitProcess,		NULL
 		JMP wpDone
 
 	wpSys:
