@@ -80,8 +80,8 @@ WndClass WNDCLASSEXA <	SIZEOF WNDCLASSEXA,\	; cbSize
 						NULL	>				; hIconSm
 
 ; Params for AdjustWindowRect
-clientLen EQU 400
-sqrLen EQU 50
+clientLen EQU 480
+sqrLen EQU 60
 defaultRect RECT	<	0,\						; left
 						0,\						; top
 						clientlen,\				; right
@@ -399,6 +399,11 @@ clickHandler PROC
 	; Case no square selected before
 	CMP prevHL.coord, NULL
 	JZ HLCurSqr
+
+	; Check if same square was clicked
+	MOV eax, prevHL.coord
+	CMP eax, curHL.coord
+	JZ deselectSquare
 	 
 	; Case possible move, jump if not move
 	CMP prevHL.piece, NULL
@@ -408,16 +413,18 @@ clickHandler PROC
 	MOV eax, OFFSET prevHL
 	PUSH eax
 	CALL BoardProc
+	JMP unHLPrevSqr
 
+	; Condition for no square selected
+	deselectSquare:
+		MOV curHL.coord, NULL
 	; Case square selected before
 	unHLPrevSqr:
 		MOV eax, OFFSET prevHL
 		CALL toggleHL
-
-	; Case deselecting previous highlight
-	MOV eax, prevHL.coord
-	CMP eax, curHL.coord
-	JZ clickDone
+		MOV eax, curHL.coord
+		CMP eax, NULL
+		JZ clickDone
 
 	HLCurSqr:
 		MOVZX eax, curHL.sqrColor
