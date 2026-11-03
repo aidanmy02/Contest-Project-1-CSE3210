@@ -126,7 +126,6 @@ InitBoard PROC
 			CALL GetSqrContent
 			MOV (MOVESTRUCT PTR [esi]).piece, al
 
-
 			; Get square Color
 			MOV eax, (MOVESTRUCT PTR [esi]).coord
 			CALL GetSqrColor

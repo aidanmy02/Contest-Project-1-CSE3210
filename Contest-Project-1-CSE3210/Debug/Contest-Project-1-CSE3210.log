@@ -1,3 +1,3 @@
-﻿WndManager.asm(245): warning A6004: procedure argument or local not referenced : hInstance
-WndManager.asm(245): warning A6004: procedure argument or local not referenced : lpCmdLine
-WndManager.asm(245): warning A6004: procedure argument or local not referenced : nShowCmd
+﻿WndManager.asm(260): warning A6004: procedure argument or local not referenced : hInstance
+WndManager.asm(260): warning A6004: procedure argument or local not referenced : lpCmdLine
+WndManager.asm(260): warning A6004: procedure argument or local not referenced : nShowCmd

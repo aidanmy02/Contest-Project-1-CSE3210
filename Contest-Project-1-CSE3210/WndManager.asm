@@ -114,6 +114,21 @@ imgBB BYTE "Pieces\black_bishop.bmp", 0
 imgBQ BYTE "Pieces\black_queen.bmp", 0
 imgBK BYTE "Pieces\black_king.bmp", 0
 
+; TODO: add back white pieces when done
+; Offsets of img names
+imgNames DWORD	OFFSET imgWQ,\
+				OFFSET imgWQ,\
+				OFFSET imgWQ,\
+				OFFSET imgWQ,\
+				OFFSET imgWQ,\
+				OFFSET imgWQ,\
+				OFFSET imgBP,\
+				OFFSET imgBR,\
+				OFFSET imgBN,\
+				OFFSET imgBB,\
+				OFFSET imgBQ,\
+				OFFSET imgBK,\
+
 ; Number of different piece types
 numPieceTypes EQU 12
 
@@ -333,21 +348,22 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		XOR eax, eax
 		MOV al, (MOVESTRUCT PTR [esi]).piece
-		CALL getPieceDC
 		CMP eax, NULL
 		JZ wpDone
+		CALL getImgOffset
 
-		INVOKE TransparentBlt,	hdc,\					; hdcDest
-								(RECT PTR [edi]).left,\	; xoriginDest
-								(RECT PTR [edi]).top,\	; yoriginDest
-								sqrLen,\				; wDest
-								sqrLen,\				; hDest
-								eax,\					; hdcSrc
-								0,\						; xoriginSrc
-								0,\						; yoriginSrc
-								sqrLen,\				; wSrc
-								sqrLen,\				; hSrc
-								COLOR_TRANS				; crTransparent
+		MOV esi, eax
+		INVOKE TransparentBlt,	hdc,\							; hdcDest
+								(RECT PTR [edi]).left,\			; xoriginDest
+								(RECT PTR [edi]).top,\			; yoriginDest
+								sqrLen,\						; wDest
+								sqrLen,\						; hDest
+								hPieceDC[esi * TYPE DWORD],\	; hdcSrc
+								0,\								; xoriginSrc
+								0,\								; yoriginSrc
+								sqrLen,\						; wSrc
+								sqrLen,\						; hSrc
+								COLOR_TRANS						; crTransparent
 
 		JMP wpDone
 
@@ -433,7 +449,7 @@ toggleHL ENDP
 
 ;
 getPieceDC PROC
-;	@ Params:	eax - piece
+;	@ Params:	eax - piece offset
 ;	@ Return:	eax - piece DC handle
 	CMP al, NULL			; Empty square
 	JZ gotPieceDC
@@ -629,11 +645,11 @@ GetImgOffset PROC
 ;	@ Params:	al - ASCII code for piece
 ;	@ Return:	eax - offset code for arrays with image info
 	CMP al, 'Z'
-	JNA blackPiece 
+	JG blackPiece 
 	CMP al, WPAWN
 	JZ offsetWPawn
 	CMP al, WROOK
-	JZ offsetWPawn
+	JZ offsetWRook
 	CMP al, WKNIGHT
 	JZ offsetWKnight
 	CMP al, WBISHOP
@@ -666,7 +682,7 @@ GetImgOffset PROC
 		CMP al, BPAWN
 		JZ offsetBPawn
 		CMP al, BROOK
-		JZ offsetBPawn
+		JZ offsetBRook
 		CMP al, BKNIGHT
 		JZ offsetBKnight
 		CMP al, BBISHOP
@@ -700,23 +716,45 @@ GetImgOffset ENDP
 
 InitBmps PROC
 	MOV ecx, numPieceTypes
+	DEC ecx
 
+	PUSH WPAWN
+	PUSH WROOK
+	PUSH WKNIGHT
+	PUSH WBISHOP
+	PUSH WQUEEN
+	PUSH WKING
+	PUSH BPAWN
+	PUSH BROOK
+	PUSH BKNIGHT
+	PUSH BBISHOP
+	PUSH BQUEEN
+	PUSH BKING
 
+	initBMPLoop:
+	POP eax		; Get piece ASCII
+	PUSH ecx	; Save ecx, syscalls change val
+	CALL GetImgOffset
+	MOV esi, eax
+	INVOKE LoadImageA,			NULL,\							; hInst
+								imgNames[esi * TYPE DWORD],\	; lpszName
+								IMAGE_BITMAP,\					; uType
+								sqrLen,\						; cxDesired
+								sqrLen,\						; cyDesired
+								LR_LOADFROMFILE					; fuLoad
+	MOV hBMP[esi * TYPE DWORD], eax
 
-	INVOKE LoadImageA,			NULL,\					; hInst
-								ADDR imgWQ,\			; lpszName
-								IMAGE_BITMAP,\			; uType
-								sqrLen,\				; cxDesired
-								sqrLen,\				; cyDesired
-								LR_LOADFROMFILE			; fuLoad
-	MOV hBMP, eax
+	INVOKE CreateCompatibleDC,	NULL							; hDC
+	MOV hPieceDC[esi * TYPE DWORD], eax
 
-	INVOKE CreateCompatibleDC,	NULL					; hDC
-	MOV hPieceDC, eax
+	INVOKE SelectObject,		hPieceDC[esi * TYPE DWORD],\	; hDC
+								hBMP[esi * TYPE DWORD]			; hObject
+	MOV hReg[esi * TYPE DWORD], eax
 
-	INVOKE SelectObject,		hPieceDC,\				; hDC
-								hBMP				; hObject
-	MOV hReg, eax
+	POP ecx
+	DEC ecx
+	CMP ecx, NULL
+	JNL initBMPLoop
 
 	RET
 InitBmps ENDP
