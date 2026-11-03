@@ -265,12 +265,12 @@ nMove PROC
 	SUB ah, bh
 
 	CMP al, NULL			; Get abs value of coords
-	JNL gotAbsXN		;
+	JNL gotAbsXN			;
 	NEG al					;
 							;
-	gotAbsXN:			;
+	gotAbsXN:				;
 		CMP ah, NULL		;
-		JNL gotAbsYN	;
+		JNL gotAbsYN		;
 		NEG ah				;
 
 	gotAbsYN:
@@ -299,7 +299,38 @@ nMove ENDP
 
 ; Bishop move
 bMove PROC
+	; Get diff between source and dest
+	MOVZX eax, dx
+	SUB al, bl
+	SUB ah, bh
 
+	MOV ebx, 10001h		; Set up ebx for add change to coords in loop
+	CMP al, ah			; If x diff != y diff, check for decreasing slope
+	JNZ decSlopeMoveB
+	CMP al, NULL		; Check if change is positive
+	JL initLoopB
+	JMP initLoopBNeg
+
+	decSlopeMoveB:
+		NEG ah
+		CMP al, ah		; Check if neg diff x = diff y
+		JNZ invalidB
+		NEG bx			; Make slope of ebx -1
+		CMP al, NULL	; Check if y change is negative
+		JL initLoopB
+		
+	initLoopBNeg:
+		NEG ebx				; Negate if x change is negative
+	initLoopB:
+
+	validB:
+		MOV eax, TRUE
+		JMP bMvFound
+
+	invalidB:
+		MOV eax, FALSE
+
+	bMvFound:
 	RET
 bMove ENDP
 
