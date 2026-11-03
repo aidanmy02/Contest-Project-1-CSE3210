@@ -31,14 +31,20 @@ EXTERN board:BOARDSTRUCT
 EXTERNDEF curHL:MOVESTRUCT
 EXTERNDEF prevHL:MOVESTRUCT
 
+.data
+prevFwd2 COORDSTRUCT <>
+isFwd2 BYTE FALSE
+isEnPassant BYTE FALSE
+
 .code
 MoveProc PROC
-
 	PUSH esi		; Save ebx, ecx, edx, esi since they will be used in processing moves
 	PUSH edx		;
 	PUSH ecx		;
 	PUSH ebx		; 
 	
+	MOV isFwd2, FALSE				; Set to false for check at end
+
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
 	MOVZX eax, prevHL.coord.x		;
@@ -92,6 +98,14 @@ MoveProc PROC
 	CALL pMove
 
 	mvProcessed:
+	PUSH eax
+	MOV al, isFwd2			; Check if a forward 2 move was made for pawn
+	CMP al, TRUE
+	JZ enPassantProcessed
+	MOV DWORD PTR prevFwd2, 0
+
+	enPassantProcessed:
+	POP eax
 	POP ebx			; Restore ebx, ecx
 	POP ecx			;
 	POP edx			;
@@ -139,6 +153,7 @@ pMove PROC
 
 		fwd2Cont:
 		CMP cl, NULL		; Check dest is empty
+		JNZ invalid
 		PUSH eax
 		MOV eax, 0FF00h		; Set eax up for GetSqrContent
 		AND ax, bx
@@ -148,8 +163,12 @@ pMove PROC
 		CALL GetSqrContent	; Check if sqr between prev and cur is empty
 		MOVZX esi, al
 		POP eax
-		CMP esi, NULL
+		CMP esi, NULL		; Check if empty
 		JNZ invalid
+		MOV eax, curHL.coord			; Save new position in prevFwd2 if valid Fwd2 move
+		MOV DWORD PTR prevFwd2, eax		;
+		MOV al, TRUE					;
+		MOV isFwd2, al					;
 		JMP valid
 
 	validateWhite:
@@ -167,8 +186,27 @@ pMove PROC
 		JG invalid
 		CMP al, -1			; Pawn takes left
 		JL invalid
-		CMP cl, NULL		; Invalid if no piece in square
+		CMP cl, NULL		; Check en passant
+		JZ enPassant
+		JMP valid
+
+	enPassant:
+		MOVZX eax, prevFwd2.x	; Check if previous move was fwd2
+		CMP eax, NULL
 		JZ invalid
+		SUB ax, prevHL.coord.x
+		CMP ax, 1			; Check if prevHL and prevFwd2 are next to each other
+		JG invalid			;
+		CMP ax, -1			;
+		JL invalid			;
+		MOV ax, prevFwd2.x		; Check if prevFwd2 and curHL are in the same column
+		CMP ax, curHL.coord.x	;
+		JNZ invalid
+		MOVZX eax, prevFwd2.y
+		CMP ax, prevHL.coord.y	; Check if prevHL y coord is same as prevFwd2 coord
+		JNZ invalid
+		MOV eax, TRUE
+		MOV isEnPassant, al
 		JMP valid
 
 	valid:
