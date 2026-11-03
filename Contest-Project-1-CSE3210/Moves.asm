@@ -43,7 +43,7 @@ MoveProc PROC
 	SHL ebx, 8						; shift into bh
 	MOVZX eax, prevHL.coord.x		;
 	MOV bl, al						;
-	MOVZX edx, curHL.coord.y		; store prevHL.coord as a word in dx
+	MOVZX edx, curHL.coord.y		; store curHL.coord as a word in dx
 	SHL edx, 8						; shift into dh
 	MOV ax, curHL.coord.x			;
 	MOV dl, al						;
@@ -102,86 +102,73 @@ MoveProc ENDP
 ; Pawn move
 pMove PROC
 	; Get diff in coords
-	MOVZX eax, dx
-	SUB ax, bx
+	CMP ch, WPAWN	; Check piece is white
+	JZ getPDiff
+
+	; Black pawn
+	PUSH edx		; Swap source and destination to get positive vertical movement
+	PUSH ebx
+	POP edx
+	POP ebx
+
+	getPDiff:
+		MOVZX eax, dx	; Diff between source and destination
+		SUB al, bl
+		SUB ah, bh
 
 	; Case: move 1 forward
-	CMP ah, 1		; Check fwd1 for white
-	JNZ fwd1B
-	CMP al, 0		; Check if stays in column
-	JNZ captW
-	CMP cl, NULL	; Check dest is empty
-	JNZ invalid
-	JMP validateWhite
-
-	fwd1B:
-	CMP ah, -1		; Check fwd1 for black
-	JNZ fwd2W
-	CMP al, 0		; Check if stays in column
-	JNZ captB
-	CMP cl, NULL	; Check dest is empty
-	JNZ invalid
-	JMP validateBlack
-
-	; Case: move 2 forward
-	fwd2W:
-		CMP ah, 2		; Check fwd2 for white
-		JNZ fwd2B
-		CMP bh, 2		; Check row validity
-		JNZ invalid
+	fwd1:
+		CMP ah, 1		; Check fwd1
+		JNZ fwd2
+		CMP al, 0		; Check if stays in column
+		JNZ capt
 		CMP cl, NULL	; Check dest is empty
-		PUSH eax
-		MOV eax, prevHL.coord
-		ADD eax, 10000h	; Add 1 to y coord
-		CALL GetSqrContent
-		MOVZX esi, al
-		POP eax
-		CMP esi, NULL
-		JNZ invalid
-		JMP validateWhite
-
-	fwd2B:
-		CMP ah, -2		; Check fwd2 for black
-		JNZ invalid
-		CMP bh, 7		; Check row validity
-		JNZ invalid
-		CMP cl, NULL	; Check dest is empty
-		PUSH eax
-		MOV eax, prevHL.coord
-		SUB eax, 10000h	; Sub 1 to y coord
-		CALL GetSqrContent
-		MOVZX esi, al
-		POP eax
-		CMP esi, NULL
-		JNZ invalid
-		JMP validateBlack
-
-	captW:
-		CMP al, 1			; Pawn takes right
-		JG invalid
-		CMP al, -1			; Pawn takes left
-		JL invalid
-		CMP cl, NULL		; Invalid if no piece in square
-		JZ invalid
-		JMP validateWhite
-	
-	captB:
-		CMP al, 1			; Pawn takes right
-		JG invalid
-		CMP al, -1			; Pawn takes left
-		JL invalid
-		CMP cl, NULL		; Invalid if no piece in square
-		JZ invalid
-		JMP validateBlack
-
-	validateWhite:
-		CMP ch, WPAWN	; Check piece is white
 		JNZ invalid
 		JMP valid
 
-	validateBlack:
-		CMP ch, BPAWN	; Check piece is white
+	; Case: move 2 forward
+	fwd2:
+		CMP ah, 2		; Check fwd2 for white
 		JNZ invalid
+
+		CMP bh, 2			; Check row validity
+		JZ validateWhite	;
+		CMP bh, 7			;
+		JNZ validateBlack	;
+		JMP invalid			;
+
+		fwd2Cont:
+		CMP cl, NULL		; Check dest is empty
+		PUSH eax
+		MOV eax, 0FF00h		; Set eax up for GetSqrContent
+		AND ax, bx
+		SHL eax, 8
+		MOV al, bl
+		ADD eax, 10000h		; Add 1 to y coord
+		CALL GetSqrContent	; Check if sqr between prev and cur is empty
+		MOVZX esi, al
+		POP eax
+		CMP esi, NULL
+		JNZ invalid
+		JMP valid
+
+	validateWhite:
+		CMP ch, WPAWN
+		JZ fwd2Cont
+		JMP invalid
+
+	validateBlack:
+		CMP ch, BPAWN
+		JZ fwd2Cont
+		JMP invalid
+
+	capt:
+		CMP al, 1			; Pawn takes right
+		JG invalid
+		CMP al, -1			; Pawn takes left
+		JL invalid
+		CMP cl, NULL		; Invalid if no piece in square
+		JZ invalid
 		JMP valid
 
 	valid:
