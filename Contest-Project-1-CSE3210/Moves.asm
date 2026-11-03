@@ -41,13 +41,13 @@ MoveProc PROC
 	CMP al, 'r'
 	JZ rookCheck
 	CMP al, 'n'
-	JZ pawnCheck
+	JZ knightCheck
 	CMP al, 'b'
-	JZ rookCheck
+	JZ bishopCheck
 	CMP al, 'q'
-	JZ pawnCheck
+	JZ queenCheck
 	CMP al, 'k'
-	JZ rookCheck
+	JZ kingCheck
 
 	kingCheck:
 	CALL kMove
@@ -115,23 +115,23 @@ pMove PROC
 		CMP al, 0		; Check if stays in column
 		JNZ capt
 		CMP cl, NULL	; Check dest is empty
-		JNZ invalid
-		JMP valid
+		JNZ invalidP
+		JMP validP
 
 	; Case: move 2 forward
 	fwd2:
 		CMP ah, 2		; Check fwd2 for white
-		JNZ invalid
+		JNZ invalidP
 
 		CMP bh, 2			; Check row validity
 		JZ validateWhite	;
 		CMP bh, 7			;
 		JNZ validateBlack	;
-		JMP invalid			;
+		JMP invalidP		;
 
 		fwd2Cont:
 		CMP cl, NULL		; Check dest is empty
-		JNZ invalid
+		JNZ invalidP
 		PUSH eax
 		MOV eax, 0FF00h		; Set eax up for GetSqrContent
 		AND ax, bx
@@ -142,57 +142,57 @@ pMove PROC
 		MOVZX esi, al
 		POP eax
 		CMP esi, NULL		; Check if empty
-		JNZ invalid
+		JNZ invalidP
 		MOV isFwd2, TRUE	; Fwd2 move was made
 		JMP validFwd2
 
 	validateWhite:
 		CMP ch, WPAWN
-		JZ fwd2Cont
-		JMP invalid
+		JNZ invalidP
+		JMP fwd2Cont
 
 	validateBlack:
 		CMP ch, BPAWN
-		JZ fwd2Cont
-		JMP invalid
+		JNZ invalidP
+		JMP fwd2Cont
 
 	capt:
 		CMP al, 1			; Pawn takes right
-		JG invalid
+		JG invalidP
 		CMP al, -1			; Pawn takes left
-		JL invalid
+		JL invalidP
 		CMP cl, NULL		; Check en passant
 		JZ enPassant
-		JMP valid
+		JMP validP
 
 	enPassant:
 		MOV al, prevMove.piece
 		OR al, 20h				; Make lower case
 		CMP al, 'p'				; Check if previous move was a pawn move
-		JNZ invalid
+		JNZ invalidP
 		CMP isFwd2, TRUE		; Check if previous move was Fwd 2
-		JNZ invalid
+		JNZ invalidP
 		MOVZX eax, prevMove.coord.y
 		CMP ax, prevHL.coord.y	; Check if prevHL y coord is same as prevMove coord
-		JNZ invalid
+		JNZ invalidP
 		MOV ax, prevMove.coord.x
 		CMP ax, curHL.coord.x	; Check if prevMove and curHL are in the same column
-		JNZ invalid
+		JNZ invalidP
 		
 		MOV prevMove.piece, NULL
 		MOV prevMove.uMsg, BP_ENPASSANT
 		MOV eax, OFFSET prevMove
 		PUSH eax
 		CALL BoardProc
-		JMP valid
+		JMP validP
 
-	valid:
+	validP:
 		MOV isFwd2, FALSE
 	validFwd2:
 		MOV eax, TRUE
 		JMP pMvFound
 
-	invalid:
+	invalidP:
 	MOV eax, FALSE
 
 	pMvFound:
@@ -208,7 +208,41 @@ rMove ENDP
 
 ; Knight move
 nMove PROC
+	; Get absolute value diff between source and dest
+	MOVZX eax, dx
+	SUB al, bl
+	SUB ah, bh
 
+	CMP al, NULL			; Get abs value of coords
+	JNL gotAbsXCoord		;
+	NEG al					;
+							;
+	gotAbsXCoord:			;
+		CMP ah, NULL		;
+		JNL gotAbsYCoord	;
+		NEG ah				;
+
+	gotAbsYCoord:
+		CMP al, 1
+		JZ checkY2
+		CMP ah, 1
+		JNZ invalidN
+		CMP al, 2
+		JNZ invalidN
+		JMP validN
+
+		checkY2:
+			CMP ah, 2
+			JNZ invalidN
+		
+	validN:
+	MOV eax, TRUE
+	JMP nMvFound
+
+	invalidN:
+	MOV eax, FALSE
+
+	nMvFound:
 	RET
 nMove ENDP
 
