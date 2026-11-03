@@ -101,17 +101,30 @@ PUBLIC msg
 msg MSGSTRUCT <>
 
 ; Piece BMP Images Paths
+imgWP BYTE "Pieces\white_pawn.bmp", 0
+imgWR BYTE "Pieces\white_rook.bmp", 0
+imgWN BYTE "Pieces\white_knight.bmp", 0
+imgWB BYTE "Pieces\white_bishop.bmp", 0
+imgWQ BYTE "Pieces\white_queen.bmp", 0
+imgWK BYTE "Pieces\white_king.bmp", 0
+imgBP BYTE "Pieces\black_pawn.bmp", 0
+imgBR BYTE "Pieces\black_rook.bmp", 0
+imgBN BYTE "Pieces\black_knight.bmp", 0
+imgBB BYTE "Pieces\black_bishop.bmp", 0
+imgBQ BYTE "Pieces\black_queen.bmp", 0
+imgBK BYTE "Pieces\black_king.bmp", 0
 
-bmpWQ BYTE "Pieces\queen.bmp", 0
+; Number of different piece types
+numPieceTypes EQU 12
 
 ; Piece BitMap handles
-wQueenHBit DWORD ?
+hBMP DWORD numPieceTypes DUP(0)
 
 ; Piece DC handles
-wQueenDC DWORD ?
+hPieceDC DWORD numPieceTypes DUP(0)
 
 ; Holds regions of pieces from SelectObject
-hReg DWORD ?
+hReg DWORD numPieceTypes DUP(0)
 
 ; Piece 
 ; Error Messages for errWnd
@@ -154,6 +167,20 @@ LR_LOADFROMFILE EQU 10h	; fuLoad			; Source: https://learn.microsoft.com/en-us/w
 ;			https://learn.microsoft.com/en-us/windows/win32/learnwin32/mouse-clicks
 WM_LBUTTONDOWN EQU 0201h
 
+; Codes for piece array offsets
+IMG_WP EQU 0
+IMG_WR EQU 1
+IMG_WN EQU 2
+IMG_WB EQU 3
+IMG_WQ EQU 4
+IMG_WK EQU 5
+IMG_BP EQU 6
+IMG_BR EQU 7
+IMG_BN EQU 8
+IMG_BB EQU 9
+IMG_BQ EQU 10
+IMG_BK EQU 11
+
 .code
 ; Implementation of WinMain for message passing to window
 WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DWORD
@@ -184,6 +211,8 @@ WinMain PROC, hInstance:DWORD, hPrevInstance:DWORD, lpCmdLine:DWORD, nShowCmd:DW
 							ADDR pid			; lpThreadId
 	MOV hThread, eax
 	
+	CALL InitBMPs
+
 	msgLoop:
 	INVOKE GetMessageA,		ADDR msg,\			; lpMsg
 							hWndMain,\			; hWnd
@@ -408,12 +437,13 @@ getPieceDC PROC
 ;	@ Return:	eax - piece DC handle
 	CMP al, NULL			; Empty square
 	JZ gotPieceDC
+
 	COMMENT @		; TODO: add back when more pieces available
-	CMP al, PIECE_WQUEEN
+	CMP al, 
 	JZ getWQueenDC
 	@
 	getWQueenDC:
-		MOV eax, wQueenDC
+		MOV eax, hPieceDC
 		JMP gotPieceDC
 
 	gotPieceDC:
@@ -583,21 +613,6 @@ createWnd PROC
 	INVOKE ShowWindow,			hWndMain,				; hWnd
 								SW_SHOWDEFAULT			; nCmdShow
 
-	INVOKE LoadImageA,			NULL,\	; hInst
-								ADDR bmpWQ,\		; lpszName
-								IMAGE_BITMAP,\			; uType
-								sqrLen,\				; cxDesired
-								sqrLen,\				; cyDesired
-								LR_LOADFROMFILE			; fuLoad
-	MOV wQueenHBit, eax
-
-	INVOKE CreateCompatibleDC,	NULL					; hDC
-	MOV wQueenDC, eax
-
-	INVOKE SelectObject,		wQueenDC,\				; hDC
-								wQueenHBit				; hObject
-	MOV hReg, eax
-
 	INVOKE CreateSolidBrush,	COLOR_WHITE				; color
 	MOV hWhiteBr, eax
 
@@ -609,10 +624,104 @@ createWnd PROC
 	RET 
 createWnd ENDP
 
+;
+GetImgOffset PROC
+;	@ Params:	al - ASCII code for piece
+;	@ Return:	eax - offset code for arrays with image info
+	CMP al, 'Z'
+	JNA blackPiece 
+	CMP al, WPAWN
+	JZ offsetWPawn
+	CMP al, WROOK
+	JZ offsetWPawn
+	CMP al, WKNIGHT
+	JZ offsetWKnight
+	CMP al, WBISHOP
+	JZ offsetWBishop
+	CMP al, WQUEEN
+	JZ offsetWQueen
+	CMP al, WKING
+	JZ offsetWKing
+
+	offsetWPawn:
+		MOV al, IMG_WP
+		JMP gotOffset
+	offsetWRook:
+		MOV al, IMG_WR
+		JMP gotOffset
+	offsetWKnight:
+		MOV al, IMG_WN
+		JMP gotOffset
+	offsetWBishop:
+		MOV al, IMG_WB
+		JMP gotOffset
+	offsetWQueen:
+		MOV al, IMG_WQ
+		JMP gotOffset
+	offsetWKing:
+		MOV al, IMG_WK
+		JMP gotOffset
+
+	blackPiece:
+		CMP al, BPAWN
+		JZ offsetBPawn
+		CMP al, BROOK
+		JZ offsetBPawn
+		CMP al, BKNIGHT
+		JZ offsetBKnight
+		CMP al, BBISHOP
+		JZ offsetBBishop
+		CMP al, BQUEEN
+		JZ offsetBQueen
+		CMP al, BKING
+		JZ offsetBKing
+
+	offsetBPawn:
+		MOV al, IMG_BP
+		JMP gotOffset
+	offsetBRook:
+		MOV al, IMG_BR
+		JMP gotOffset
+	offsetBKnight:
+		MOV al, IMG_BN
+		JMP gotOffset
+	offsetBBishop:
+		MOV al, IMG_BB
+		JMP gotOffset
+	offsetBQueen:
+		MOV al, IMG_BQ
+		JMP gotOffset
+	offsetBKing:
+		MOV al, IMG_BK
+
+	gotOffset:
+	RET
+GetImgOffset ENDP
+
 InitBmps PROC
+	MOV ecx, numPieceTypes
+
+
+
+	INVOKE LoadImageA,			NULL,\					; hInst
+								ADDR imgWQ,\			; lpszName
+								IMAGE_BITMAP,\			; uType
+								sqrLen,\				; cxDesired
+								sqrLen,\				; cyDesired
+								LR_LOADFROMFILE			; fuLoad
+	MOV hBMP, eax
+
+	INVOKE CreateCompatibleDC,	NULL					; hDC
+	MOV hPieceDC, eax
+
+	INVOKE SelectObject,		hPieceDC,\				; hDC
+								hBMP				; hObject
+	MOV hReg, eax
 
 	RET
 InitBmps ENDP
+
+
 
 ; Creates error popup window
 errWnd PROC
