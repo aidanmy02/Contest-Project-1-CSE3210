@@ -207,45 +207,42 @@ rMove PROC
 	SUB ah, bh
 
 	CMP al, NULL			; Check if move is vertical
-	JZ checkVerticalR
+	JZ setVerticalR
 	CMP ah, NULL			; Check if move is horizontal
 	JNZ invalidR
-	CMP al, NULL			; If horizontal, get abs value of diff between source and dest
-	JNL gotAbsXR			;
-	NEG al					;
-	gotAbsXR:				;
+
+	MOV ebx, 1				; Change in x coord = 1
+	CMP al, NULL			; If diff in x is positive, set positive loop
+	JNL initLoopR
+
+	NEG ebx					; Negtive, set x coord to decrement
+	JMP initLoopRNeg
 
 	; Vertical check that all squares between source and dest are empty
-	checkVerticalR:
-		CMP ah, NULL		; If positive diff, rook moves up
-		JNL setIncR			;
+	setVerticalR:
+		MOV ebx, 10000h		; set y coord change
+		SHR ax, 8			; Shift a byte for when loop counter is declared in initLoopR
+		CMP al, NULL		; If positive diff, rook moves up
+		JNL initLoopR		;
 
-		MOV ebx, 10000h		; Negtive, set coord to decrement
-		NEG ebx				;
-		NEG ah				; Get abs value of diff
-		JMP setDecR
+		NEG ebx				; Negtive, set y coord to decrement
+		JMP initLoopRNeg
 
-		; Sets loop to increment
-		setIncR:
-		MOV ebx, 10000h
-		JMP initLoopR
 
-		setDecR:
-		MOV ebx, 10000h			; Decrement y by 1
-		NEG ebx					;
-
-		initLoopR:
+	initLoopRNeg:
+		NEG al
+	initLoopR:
 		MOV edx, prevHL.coord	; Start at next sqr after prevHL
-		MOVZX ecx, ah			; Use diff to loop check sqrs between source and dest
+		MOVZX ecx, al			; Use diff to loop check sqrs between source and dest
 
 		startLoopR:
 			LOOP checkLoopR
 			JMP validR
 		checkLoopR:
-			ADD edx, ebx
+			ADD edx, ebx		; Add increment to changing coord
 			MOV eax, edx
 			CALL GetSqrContent
-			CMP al, NULL
+			CMP al, NULL		; Check if square is empty
 			JNZ invalidR
 			JMP startLoopR
 
