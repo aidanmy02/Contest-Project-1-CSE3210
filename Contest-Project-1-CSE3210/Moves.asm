@@ -1,31 +1,12 @@
-.386
-.model flat,stdcall
-.stack 4096
-OPTION PROC:PRIVATE
+INCLUDE Chess.inc
 
-INCLUDE Board.inc
-BoardProc PROTO
+GetSqrContent PROTO
 
 PUBLIC MoveProc
 
 NULL EQU 0
 FALSE EQU 0
 TRUE EQU 1
-
-; Structs
-; Coordinate
-COORDSTRUCT STRUCT
-	x WORD ?
-	y WORD ?
-COORDSTRUCT ENDS
-
-; Move
-MOVESTRUCT STRUCT
-	uMsg DWORD ?
-	coord COORDSTRUCT <>
-	piece BYTE ?
-	sqrColor BYTE ?
-MOVESTRUCT ENDS
 
 EXTERN board:BOARDSTRUCT
 EXTERNDEF curHL:MOVESTRUCT
@@ -98,6 +79,8 @@ MoveProc PROC
 	CALL pMove
 
 	mvProcessed:
+	TEST al, FALSE
+	JZ enPassantProcessed
 	PUSH eax
 	MOV al, isFwd2			; Check if a forward 2 move was made for pawn
 	CMP al, TRUE

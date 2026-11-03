@@ -101,7 +101,8 @@ PUBLIC msg
 msg MSGSTRUCT <>
 
 ; Piece BMP Images Paths
-queenImgPath BYTE "C:\Users\aidan\source\repos\Contest-Project-1-CSE3210\Contest-Project-1-CSE3210\Pieces\queen.bmp", 0
+
+bmpWQ BYTE "Pieces\queen.bmp", 0
 
 ; Piece BitMap handles
 wQueenHBit DWORD ?
@@ -583,7 +584,7 @@ createWnd PROC
 								SW_SHOWDEFAULT			; nCmdShow
 
 	INVOKE LoadImageA,			NULL,\	; hInst
-								ADDR queenImgPath,\		; lpszName
+								ADDR bmpWQ,\		; lpszName
 								IMAGE_BITMAP,\			; uType
 								sqrLen,\				; cxDesired
 								sqrLen,\				; cyDesired
@@ -607,6 +608,11 @@ createWnd PROC
 	MOV hHLBr, eax
 	RET 
 createWnd ENDP
+
+InitBmps PROC
+
+	RET
+InitBmps ENDP
 
 ; Creates error popup window
 errWnd PROC

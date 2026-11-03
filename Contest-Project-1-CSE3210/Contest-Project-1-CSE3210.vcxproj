@@ -157,7 +157,6 @@
     <MASM Include="WndManager.asm" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Board.inc" />
     <None Include="Chess.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
