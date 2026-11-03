@@ -202,13 +202,32 @@ pMove ENDP
 
 ; Rook move
 rMove PROC
+	MOVZX eax, dx
+	SUB al, bl
+	SUB ah, bh
 
+	CMP al, NULL		; Check if prevHL and curHL are in same column or row
+	JZ checkSqrsR		;
+	CMP ah, NULL		;
+	JNZ invalidR		;
+	
+	checkSqrsR:
+
+
+	validR:
+	MOV eax, TRUE
+	JMP rMvFound
+
+	invalidR:
+	MOV eax, FALSE
+
+	rMvFound:
 	RET
 rMove ENDP
 
 ; Knight move
 nMove PROC
-	; Get absolute value diff between source and dest
+	; Get diff between source and dest
 	MOVZX eax, dx
 	SUB al, bl
 	SUB ah, bh
@@ -223,16 +242,16 @@ nMove PROC
 		NEG ah				;
 
 	gotAbsYCoord:
-		CMP al, 1
-		JZ checkY2
-		CMP ah, 1
+		CMP al, 1			; If x diff = 1, check y diff = 2
+		JZ checkYN
+		CMP ah, 1			; If x diff and y diff not 1, invalid
 		JNZ invalidN
 		CMP al, 2
-		JNZ invalidN
+		JNZ invalidN		; If x diff != 2 and y diff = 1, invalid
 		JMP validN
 
-		checkY2:
-			CMP ah, 2
+		checkYN:
+			CMP ah, 2		; If x diff = 1 and y diff != 2, invalid
 			JNZ invalidN
 		
 	validN:
