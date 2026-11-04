@@ -4,6 +4,7 @@ GetSqrContent PROTO
 
 PUBLIC MoveProc
 PUBLIC prevMove
+PUBLIC checkMove
 
 EXTERN board:BOARDSTRUCT
 EXTERN isWhiteMove:BYTE
@@ -12,6 +13,7 @@ EXTERNDEF prevHL:MOVESTRUCT
 
 .data
 prevMove MOVESTRUCT <>
+checkMove MOVESTRUCT <>
 isFwd2 BYTE FALSE
 
 .code
@@ -393,6 +395,10 @@ kMove PROC
 	CMP ah, 1				; Check y limitation
 	JG invalidK
 
+	MOV eax, curHL.coord
+	CALL checkCheck
+ 	TEST al, TRUE
+	JNZ invalidK
 
 	validK:
 		MOV eax, TRUE
@@ -407,16 +413,86 @@ kMove ENDP
 
 ;
 checkCheck PROC
-; @Params:	eax - coordinate to check for check	
-	TEST isWhiteMove, TRUE
-	JZ checkWP
+; @Params:	eax - coordinate to check for check
+	PUSH eax
+	CALL checkCheckP
+	TEST al, TRUE
+	JNZ gotCheckStatus
 
-	checkWP:
-	ADD eax, 10001h
+	gotCheckStatus:
+	ADD esp, 4			; Always have a leftover push at the end
+	RET
 	RET
 checkCheck ENDP
 
+checkCheckP PROC
+; @ Return: eax - if coord is checked by pawn, return TRUE, else FALSE
+	PUSH eax
+	TEST isWhiteMove, TRUE
+	JNZ checkWP1
+		
+	; Check black pawn pos
+	SUB eax, 10001h
+	CALL isValidCoord
+	CMP al, TRUE				; coord x always in al for 1-8
+	JZ checkBP2
+	CALL GetSqrContent
+	CMP al, 'P'
+	JZ isCheckP
+
+	checkBP2:
+		POP eax
+		PUSH eax
+		SUB eax, 10000h
+		DEC eax
+		CALL isValidCoord
+		CMP al, TRUE
+		JZ checkWP2
+		CALL GetSqrContent
+		CMP al, 'P'
+		JZ isCheckP
+		JMP notCheckP
+
+	; Check white pawn pos
+	checkWP1:
+		ADD eax, 10001h
+		CALL isValidCoord
+		CMP al, TRUE
+		JZ checkWP2
+		CALL GetSqrContent
+		CMP al, 'p'
+		JZ isCheckP
+
+	checkWP2:
+		POP eax
+		PUSH eax
+		ADD eax, 10000h
+		DEC eax
+		CALL isValidCoord
+		CMP al, TRUE
+		JZ checkWP2
+		CALL GetSqrContent
+		CMP al, 'p'
+		JZ isCheckP
+		JMP notCheckP
+
+	isCheckP:
+		POP eax
+		MOV eax, TRUE
+		JMP checkedP
+
+	notCheckP:
+		POP eax
+		MOV eax, FALSE
+
+	checkedP:
+	RET
+checkCheckP ENDP
+
+;
 isValidCoord PROC
+; @Params: If true, returns coord, else returns FALSE
+	PUSH eax
 	CMP ax, 1
 	JL invalidMv
 	CMP ax, 8
@@ -426,12 +502,11 @@ isValidCoord PROC
 	JL invalidMV
 	CMP ax, 8
 	JG invalidMv
-
-	validMv:
-	MOV eax, TRUE
+	POP eax
 	JMP checkedValidity
 
 	invalidMv:
+	POP eax
 	MOV eax, FALSE
 
 	checkedValidity:

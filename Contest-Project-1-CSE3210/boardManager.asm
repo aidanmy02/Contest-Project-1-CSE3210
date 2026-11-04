@@ -7,6 +7,7 @@ PUBLIC isWhiteMove
 PUBLIC GetSqrContent
 
 EXTERN MoveProc:PROTO
+EXTERN checkMove:MOVESTRUCT
 
 numCols EQU 8
 numRows EQU 8
@@ -88,8 +89,7 @@ BoardProc PROC
 								NULL				; lParam
 
 		; Next player's move
-		MOV al, TRUE
-		XOR isWhiteMove, al
+		XOR isWhiteMove, TRUE
 		JMP bpDone
 
 	bpEnPassant:
