@@ -400,6 +400,11 @@ kMove PROC
  	TEST al, TRUE
 	JNZ invalidK
 
+	MOV eax, curHL.coord
+	CALL checkConflictK
+	TEST al, TRUE
+	JNZ invalidK
+
 	validK:
 		MOV eax, TRUE
 		JMP kMoveFound
@@ -467,7 +472,60 @@ checkCoord MACRO
 	done:
 	ENDM
 
+;
 checkConflictK PROC
+; @Comment:		Although it is not technically check two kings touch, the ease of simply using
+;					using the checkCoord MACRO outweighed my internal conflict with using the
+;					misnomer labels notCheck and isCheck. I hope you can forgive me.
+
+	PUSH edx
+	MOV edx, 'K'		; Piece to check for
+	MOV dh, 1			; To not conflict with NULL for empty space
+	
+	TEST isWhiteMove, TRUE
+	JZ startCheckN
+
+	ADD dl, 20h			; Make lower case if it is white's turn
+
+	startCheckN:
+		ADD eax, 10001h	; Check (1,1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+		
+		DEC ax			; Check (1, 0)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		DEC ax			; Check (1, -1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		ROL eax, 16		; Check (-1, 1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		DEC ax			; Check (-1, 0)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		DEC ax			; Check (-1, -1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		AND eax, 1		; Check (0, 1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+	notCheck:
+		MOV eax, FALSE
+		JMP checkedN
+
+	isCheck:
+		POP eax			; Leftover, discard
+		MOV eax, TRUE
+
+	checkedN:
+	POP edx
 	RET
 checkConflictK ENDP
 
