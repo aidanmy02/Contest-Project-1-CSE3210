@@ -431,6 +431,12 @@ checkCheck PROC
 	TEST al, TRUE
 	JNZ gotCheckStatus
 
+	POP eax
+	PUSH eax
+	CALL checkCheckBQ
+	TEST al, TRUE
+	JNZ gotCheckStatus
+
 	gotCheckStatus:
 	ADD esp, 4			; Always have a leftover push at the end
 	RET
@@ -467,7 +473,70 @@ checkConflictK ENDP
 
 checkCheckBQ PROC
 	
+; @ Return: eax - if coord is checked by rook or queen, return TRUE, else FALSE
+	LOCAL	incs[16],
+			numIncs:BYTE,
+			numSqrs:BYTE
 
+	MOV DWORD PTR incs, 00010001h
+	MOV DWORD PTR incs[4], 0FFFEFFFFh		; Prevent overflow
+	MOV DWORD PTR incs[8], 0000FFFFh		; Carry accounts for adding to y coord
+	MOV DWORD PTR incs[12], 0FFFF0001h
+	MOV numIncs, 4
+	MOV numSqrs, 9		; Max squares = 8 - 1 = 7, add buffer of 1 to prevent 
+						;	stack misalignment in startOutLoop
+
+	PUSH edx
+	PUSH ecx
+	PUSH ebx
+
+	MOV edx, 'B'		; Pieces to check for
+	MOV dh, 'Q'			;
+	XOR ecx, ecx		; Outer loop initilization
+
+	TEST isWhiteMove, TRUE
+	JZ startOutLoopBQ
+
+	ADD edx, 2020h		; Make lower case for check 
+	
+	startOutLoopBQ:
+		MOV ebx, incs[ecx * TYPE DWORD]
+		PUSH ecx		; Save counter and coord for next loop
+		PUSH eax		;
+		MOV cl, numSqrs
+	startInLoopBQ:
+		LOOP inLoopBQ
+		JMP endOutLoopBQ
+	inLoopBQ:
+		ADD eax, ebx		; Add increment
+		checkCoord
+
+		CMP al, NULL		; Check for non-checking pieces (blocking pieces)
+		JNZ endOutLoopBQ	;	or for -1 returned from isValidCoord
+
+		POP eax				; Coord from macro
+		JMP startInLoopBQ	; One of the above cases must be hit for inLoop to exit
+	endOutLoopBQ:
+		POP eax			; Leftover from previous loop, discard
+		POP eax			; Original coord
+		POP ecx			; Outer loop count
+		INC ecx
+		CMP cl, numIncs
+		JZ notCheck
+		JMP startOutLoopBQ
+
+	notCheck:
+		MOV eax, FALSE
+		JMP checkedBQ
+
+	isCheck:
+		ADD esp, 12		; 3 leftover dwords in stack
+		MOV eax, TRUE
+
+	checkedBQ:
+	PUSH ebx
+	POP ecx
+	POP edx
 	RET
 checkCheckBQ ENDP
 
