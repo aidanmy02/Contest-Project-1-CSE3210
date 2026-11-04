@@ -446,55 +446,89 @@ checkCheckN ENDP
 
 checkCheckRQ PROC
 ; @ Return: eax - if coord is checked by rook or queen, return TRUE, else FALSE
+	LOCAL	incs[16],
+			numIncs:BYTE,
+			numSqrs:BYTE
+
+	MOV DWORD PTR incs, 00010000h
+	MOV DWORD PTR incs[4], 0FFFF0000h
+	MOV DWORD PTR incs[8], 0001h
+	MOV DWORD PTR incs[12], 0FFFFh
+	MOV numIncs, 4
+	MOV numSqrs, 9		; Max squares = 8 - 1 = 7, add buffer of 1 to prevent 
+						;	stack misalignment in startOutLoop
+
 	PUSH edx
 	PUSH ecx
 	PUSH ebx
-	PUSH eax
 
-	MOV edx, 'R'
-	MOV dh, 'Q'
-	MOV ecx, 8					; Max spaces a piece can move is 8 - 1 = 7
-	MOV ebx, 10000h
+	MOV edx, 'R'		; Pieces to check for
+	MOV dh, 'Q'			;
+	XOR ecx, ecx		; Outer loop initilization
+
 	TEST isWhiteMove, TRUE
-	JZ initLoopRQ
+	JZ startOutLoopRQ
 
-	ADD edx, 2020h				; Make lower case for check 
+	ADD edx, 2020h		; Make lower case for check 
 	
-	initLoopRQ:
+	startOutLoopRQ:
+		MOV ebx, incs[ecx * TYPE DWORD]
+		PUSH ecx		; Save counter and coord for next loop
+		PUSH eax		;
+		MOV cl, numSqrs
+	startInLoopRQ:
+		LOOP inLoopRQ
+		JMP endOutLoopRQ
+	inLoopRQ:
+		PUSH edx			; Check for carry from lower word 
+		MOV dx, ax			;
+		ADD dx, bx			;
+		JNC noCarry			;
+		SUB eax, 10000h		;
+		noCarry:			;
+		POP	edx				;
 
-	; Vertical loop
-	startLoopRQ:
-		LOOP loopRQ
-		JMP endLoopRQ
-	loopRQ:
-		ADD eax, ebx
+		ADD eax, ebx		; Add increment
 		PUSH eax
-		CALL isValidCoord
-		CMP al, FALSE
-		JZ endLoopRQ
+		CALL isValidCoord	; Check for valid coord
+		CMP al, FALSE		;
+		JZ endOutLoopRQ		;
 		POP eax
+
 		PUSH eax
-		CALL GetSqrContent
-		CMP al, dl
-		JZ isCheckRQ
-		CMP al, dh
-		JZ isCheckRQ
-		CMP al, NULL
-		JNZ notCheckRQ
-		POP eax
-		JMP startLoopRQ
-	endLoopRQ:
+		CALL GetSqrContent	; Check for checking pieces
+		CMP al, dl			;
+		JZ isCheckRQ		;
+		CMP al, dh			;
+		JZ isCheckRQ		;
+
+		CMP al, NULL		; Check for non-checking pieces (blocking pieces)
+		JNZ endOutLoopRQ	;
+
+		POP eax				; One of the above cases must be hit for inLoop to exit
+		JMP startInLoopRQ	;
+	endOutLoopRQ:
+		POP eax			; Leftover from previous loop, discard
+		POP eax			; Original coord
+		POP ecx			; Outer loop count
+		INC ecx
+		CMP cl, numIncs
+		JZ notCheckRQ
+		JMP startOutLoopRQ
 
 	notCheckRQ:
 		MOV eax, FALSE
 		JMP checkedRQ
 
 	isCheckRQ:
+		POP eax			; Leftovers for checked case
+		POP eax			;
+		POP eax			;
 		MOV eax, TRUE
 
 	checkedRQ:
-	ADD esp, 8			; Always two remaining params
-	POP ebx
+	ADD esp, 8			; Always two remaining pushes from eax
+	PUSH ebx
 	POP ecx
 	POP edx
 	RET
