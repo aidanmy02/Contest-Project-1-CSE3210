@@ -113,10 +113,10 @@ pMove PROC
 
 	; Case: move 1 forward
 	fwd1:
-		CMP ah, 1		; Check fwd1
-		JNZ fwd2
 		CMP al, 0		; Check if stays in column
 		JNZ capt
+		CMP ah, 1		; Check fwd1
+		JNZ fwd2
 		CMP cl, NULL	; Check dest is empty
 		JNZ invalidP
 		JMP validP
