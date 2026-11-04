@@ -446,42 +446,54 @@ checkCheckN ENDP
 
 checkCheckRQ PROC
 ; @ Return: eax - if coord is checked by rook or queen, return TRUE, else FALSE
-	PUSH eax
 	PUSH edx
 	PUSH ecx
 	PUSH ebx
+	PUSH eax
 
 	MOV edx, 'R'
 	MOV dh, 'Q'
+	MOV ecx, 8					; Max spaces a piece can move is 8 - 1 = 7
+	MOV ebx, 10000h
 	TEST isWhiteMove, TRUE
-	JZ piecesSetRQ
+	JZ initLoopRQ
 
 	ADD edx, 2020h				; Make lower case for check 
 	
-	piecesSetRQ:
-		MOV ebx, 10000h
-		MOV ecx, 8				; Max spaces a piece can move is 8 - 1 = 7
+	initLoopRQ:
 
 	; Vertical loop
-	startLoopNSRQ:
-		LOOP loopNSRQ
-		JMP endLoopNSRQ
-	loopNSRQ:
-
-	endLoopNSRQ:
-	
-	initLoopEWRQ:
-
-	isCheckRQ:
+	startLoopRQ:
+		LOOP loopRQ
+		JMP endLoopRQ
+	loopRQ:
+		ADD eax, ebx
+		PUSH eax
+		CALL isValidCoord
+		CMP al, FALSE
+		JZ endLoopRQ
 		POP eax
-		MOV eax, TRUE
-		JMP checkedRQ
+		PUSH eax
+		CALL GetSqrContent
+		CMP al, dl
+		JZ isCheckRQ
+		CMP al, dh
+		JZ isCheckRQ
+		CMP al, NULL
+		JNZ notCheckRQ
+		POP eax
+		JMP startLoopRQ
+	endLoopRQ:
 
 	notCheckRQ:
-		POP eax
 		MOV eax, FALSE
+		JMP checkedRQ
+
+	isCheckRQ:
+		MOV eax, TRUE
 
 	checkedRQ:
+	ADD esp, 8			; Always two remaining params
 	POP ebx
 	POP ecx
 	POP edx
@@ -539,14 +551,14 @@ checkCheckP PROC
 		JZ isCheckP
 		JMP notCheckP
 
-	isCheckP:
-		POP eax
-		MOV eax, TRUE
-		JMP checkedP
-
 	notCheckP:
 		POP eax
 		MOV eax, FALSE
+		JMP checkedP
+	
+	isCheckP:
+		POP eax
+		MOV eax, TRUE
 
 	checkedP:
 	RET
