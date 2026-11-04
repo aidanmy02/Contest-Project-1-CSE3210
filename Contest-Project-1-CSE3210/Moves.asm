@@ -228,7 +228,6 @@ rMove PROC
 		NEG ebx				; Negtive, set y coord to decrement
 		JMP initLoopRNeg
 
-
 	initLoopRNeg:
 		NEG al
 	initLoopR:
@@ -304,24 +303,43 @@ bMove PROC
 	SUB al, bl
 	SUB ah, bh
 
-	MOV ebx, 10001h		; Set up ebx for add change to coords in loop
-	CMP al, ah			; If x diff != y diff, check for decreasing slope
+	MOV ebx, 10001h				; Set up ebx for add change to coords in loop
+	CMP al, ah					; If x diff != y diff, check for decreasing slope
 	JNZ decSlopeMoveB
-	CMP al, NULL		; Check if change is positive
-	JL initLoopB
-	JMP initLoopBNeg
+	CMP al, NULL				; Check if change is positive
+	JG initLoopB
+	MOV ebx, 0FFFFFFFFh
+	NEG al						; Prep al for loop counter
+	JMP initLoopB
 
 	decSlopeMoveB:
-		NEG ah
-		CMP al, ah		; Check if neg diff x = diff y
+		NEG al
+		CMP al, ah				; Check if neg diff x = diff y
 		JNZ invalidB
-		NEG bx			; Make slope of ebx -1
-		CMP al, NULL	; Check if y change is negative
-		JL initLoopB
-		
-	initLoopBNeg:
-		NEG ebx				; Negate if x change is negative
+		MOV bx, 0FFFFh			; Make slope of ebx -1
+		CMP ah, NULL			; Check if y change is positive
+		JG initLoopB
+		MOV ebx, 0FFFF0001h
+		NEG al					; Prep al for loop counter
+
 	initLoopB:
+		MOV edx, prevHL.coord	; Start at next sqr after prevHL
+		MOVZX ecx, al			; Use diff to loop check sqrs between source and dest
+	startLoopB:
+			LOOP checkLoopB
+			JMP validB
+		checkLoopB:
+			MOV eax, edx
+			ADD ax, bx
+			JNC noCarryB		; If carry from low word to high word, decrement high word
+			SUB edx, 10000h		;
+			noCarryB:
+			ADD edx, ebx		; Add increment to changing coord
+			MOV eax, edx
+			CALL GetSqrContent
+			CMP al, NULL		; Check if square is empty
+			JNZ invalidB
+			JMP startLoopB
 
 	validB:
 		MOV eax, TRUE
