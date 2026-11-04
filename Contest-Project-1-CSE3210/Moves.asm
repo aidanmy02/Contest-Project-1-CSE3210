@@ -354,7 +354,19 @@ bMove ENDP
 
 ; Queen move
 qMove PROC
+	PUSH edx		; Save for rMove call
+	PUSH ebx
 
+	CALL bMove		; Check diagonal moves
+	POP ebx
+	POP edx
+	CMP eax, TRUE	; Return true if valid
+	JZ qMvFound		;
+
+	CALL rMove		; Check horizontal/vertical moves
+					; return value of rMove
+
+	qMvFound:
 	RET
 qMove ENDP
 
