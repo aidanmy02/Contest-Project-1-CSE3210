@@ -372,7 +372,35 @@ qMove ENDP
 
 ; King move
 kMove PROC
+	; Get diff between source and dest
+	MOVZX eax, dx
+	SUB al, bl
+	SUB ah, bh
 
+	CMP al, NULL			; Get abs value of coords
+	JNL gotAbsXK			;
+	NEG al					;
+							;
+	gotAbsXK:				;
+		CMP ah, NULL		;
+		JNL gotAbsYK		;
+		NEG ah				;
+
+	gotAbsYK:
+	CMP al, 1				; Check x limitation
+	JG invalidK
+	CMP ah, 1				; Check y limitation
+	JG invalidK
+
+
+	validK:
+		MOV eax, TRUE
+		JMP kMoveFound
+
+	invalidK:
+		MOV eax, FALSE
+
+	kMoveFound:
 	RET
 kMove ENDP
 
