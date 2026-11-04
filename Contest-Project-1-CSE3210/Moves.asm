@@ -448,7 +448,7 @@ checkCoord MACRO
 
 	PUSH eax
 	CALL isValidCoord
-	CMP al, FALSE
+	CMP eax, -1
 	JZ done
 	POP eax
 	PUSH eax
@@ -466,6 +466,8 @@ checkConflictK PROC
 checkConflictK ENDP
 
 checkCheckBQ PROC
+	
+
 	RET
 checkCheckBQ ENDP
 
@@ -477,18 +479,38 @@ checkCheckN PROC
 	MOV dh, 1			; To not conflict with NULL for empty space
 	
 	TEST isWhiteMove, TRUE
-	JZ CheckCoord1N
+	JZ startCheckN
 
 	ADD dl, 20h			; Make lower case if it is white's turn
 
-	checkCoord1N:
-		PUSH eax
-		ADD eax, ebx
-		checkCoord
+	startCheckN:
+		ADD eax, ebx	; Check (1,2)
+		checkCoord		;
 		POP eax			; Leftover from macro
-		POP eax
+		
+		NEG bx			; Check (1, -2)
+		checkCoord		;
+		POP eax			; Leftover from macro
 
-	checkCoord2N:
+		ROL ebx, 16		; Check (-2, 1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		NEG bx			; Check (-2, -1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		ROL ebx, 16		; Check (-1, -2)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		NEG bx			; Check (-1, 2)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		ROL ebx, 16		; Check (2, -1)
+		checkCoord		;
+		POP eax			; Leftover from macro
 
 	notCheck:
 		MOV eax, FALSE
@@ -496,7 +518,6 @@ checkCheckN PROC
 
 	isCheck:
 		POP eax			; Leftover, discard
-		POP eax			;
 		MOV eax, TRUE
 
 	checkedN:
@@ -545,7 +566,7 @@ checkCheckRQ PROC
 		checkCoord
 
 		CMP al, NULL		; Check for non-checking pieces (blocking pieces)
-		JNZ endOutLoopRQ	;
+		JNZ endOutLoopRQ	;	or for -1 returned from isValidCoord
 
 		POP eax				; Coord from macro
 		JMP startInLoopRQ	; One of the above cases must be hit for inLoop to exit
@@ -619,7 +640,7 @@ checkCheckP ENDP
 
 ;
 isValidCoord PROC
-; @Params: If true, returns coord, else returns FALSE
+; @Params: If true, returns coord, else returns -1
 	PUSH eax
 	CMP ax, 1
 	JL invalidMv
@@ -635,7 +656,7 @@ isValidCoord PROC
 
 	invalidMv:
 	POP eax
-	MOV eax, FALSE
+	MOV eax, -1
 
 	checkedValidity:
 	RET
