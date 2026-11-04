@@ -16,6 +16,11 @@ prevMove MOVESTRUCT <>
 checkMove MOVESTRUCT <>
 isFwd2 BYTE FALSE
 
+wKingCastle BYTE 4 DUP(0)		; 3 Bools:	1. True if king has moved
+bKingCastle BYTE 4 DUP(0)		;			2. True if a file rook has moved
+								;			3. True if h file rook has moved
+								; Null terminated for alignment
+
 .code
 MoveProc PROC
 	PUSH esi		; Save ebx, ecx, edx, esi since they will be used in processing moves
@@ -415,6 +420,32 @@ kMove PROC
 	kMoveFound:
 	RET
 kMove ENDP
+
+;
+checkCastle PROC
+; @Params:	eax - coordinate to check for castle
+	PUSH esi
+	PUSH eax
+	MOV al, prevHL.piece
+	CMP al, 'K'
+	JZ wKC
+	
+	MOV esi, OFFSET bKingCastle
+	JMP castleCheck
+
+	wKC:
+	MOV esi, OFFSET wKingCastle
+
+	castleCheck:
+	
+
+	invlaidCastle:
+		MOV eax, FALSE
+
+	castleFound:
+	POP esi
+	RET
+checkCastle ENDP
 
 ;
 checkCheck PROC
