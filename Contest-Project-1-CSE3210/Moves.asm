@@ -442,6 +442,8 @@ checkCoord MACRO
 ; @Params:	eax - contains DWORD coord
 ;			dx  - contains one or two pieces in high and low bytes
 ;					if one piece, upper byte contains 1
+; @Comment: The caller must pop the leftover eax if not check
+;			Caller must have isCheck label implemented
 
 	PUSH eax
 	CALL isValidCoord
@@ -458,7 +460,6 @@ checkCoord MACRO
 	JMP isCheck
 
 	done:
-	POP eax
 	ENDM
 
 checkConflictK PROC
@@ -485,6 +486,7 @@ checkCheckN PROC
 		PUSH eax
 		ADD eax, ebx
 		checkCoord
+		POP eax			; Leftover from macro
 		POP eax
 
 	checkCoord2N:
@@ -540,45 +542,32 @@ checkCheckRQ PROC
 		JMP endOutLoopRQ
 	inLoopRQ:
 		ADD eax, ebx		; Add increment
-		PUSH eax
-		CALL isValidCoord	; Check for valid coord
-		CMP al, FALSE		;
-		JZ endOutLoopRQ		;
-		POP eax
-
-		PUSH eax
-		CALL GetSqrContent	; Check for checking pieces
-		CMP al, dl			;
-		JZ isCheckRQ		;
-		CMP al, dh			;
-		JZ isCheckRQ		;
+		checkCoord
 
 		CMP al, NULL		; Check for non-checking pieces (blocking pieces)
 		JNZ endOutLoopRQ	;
 
-		POP eax				; One of the above cases must be hit for inLoop to exit
-		JMP startInLoopRQ	;
+		POP eax				; Coord from macro
+		JMP startInLoopRQ	; One of the above cases must be hit for inLoop to exit
 	endOutLoopRQ:
 		POP eax			; Leftover from previous loop, discard
 		POP eax			; Original coord
 		POP ecx			; Outer loop count
 		INC ecx
 		CMP cl, numIncs
-		JZ notCheckRQ
+		JZ notCheck
 		JMP startOutLoopRQ
 
-	notCheckRQ:
+	notCheck:
 		MOV eax, FALSE
 		JMP checkedRQ
 
-	isCheckRQ:
+	isCheck:
 		POP eax			; Leftovers for checked case
-		POP eax			;
 		POP eax			;
 		MOV eax, TRUE
 
 	checkedRQ:
-	ADD esp, 8			; Always two remaining pushes from eax
 	PUSH ebx
 	POP ecx
 	POP edx
