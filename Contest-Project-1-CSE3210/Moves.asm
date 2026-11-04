@@ -443,7 +443,6 @@ checkCheckN PROC
 	RET
 checkCheckN ENDP
 
-
 checkCheckRQ PROC
 ; @ Return: eax - if coord is checked by rook or queen, return TRUE, else FALSE
 	LOCAL	incs[16],
@@ -452,8 +451,8 @@ checkCheckRQ PROC
 
 	MOV DWORD PTR incs, 00010000h
 	MOV DWORD PTR incs[4], 0FFFF0000h
-	MOV DWORD PTR incs[8], 0001h
-	MOV DWORD PTR incs[12], 0FFFFh
+	MOV DWORD PTR incs[8], 1
+	MOV DWORD PTR incs[12], 0FFFFFFFFh		; Overflow not possible of interval of loop
 	MOV numIncs, 4
 	MOV numSqrs, 9		; Max squares = 8 - 1 = 7, add buffer of 1 to prevent 
 						;	stack misalignment in startOutLoop
@@ -480,14 +479,6 @@ checkCheckRQ PROC
 		LOOP inLoopRQ
 		JMP endOutLoopRQ
 	inLoopRQ:
-		PUSH edx			; Check for carry from lower word 
-		MOV dx, ax			;
-		ADD dx, bx			;
-		JNC noCarry			;
-		SUB eax, 10000h		;
-		noCarry:			;
-		POP	edx				;
-
 		ADD eax, ebx		; Add increment
 		PUSH eax
 		CALL isValidCoord	; Check for valid coord
