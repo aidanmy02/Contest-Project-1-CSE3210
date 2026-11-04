@@ -442,8 +442,9 @@ checkCoord MACRO
 ; @Params:	eax - contains DWORD coord
 ;			dx  - contains one or two pieces in high and low bytes
 ;					if one piece, upper byte contains 1
-; @Comment: The caller must pop the leftover eax if not check
+; @Comment: The caller must pop the leftover original coord
 ;			Caller must have isCheck label implemented
+	LOCAL done		; Prevent symbol redefinition error
 
 	PUSH eax
 	CALL isValidCoord
@@ -453,11 +454,9 @@ checkCoord MACRO
 	PUSH eax
 	CALL GetSqrContent
 	CMP al, dl
-	JNZ done
+	JZ isCheck
 	CMP al, dh
-	JNZ done
-	POP edx			; Leftover, discard
-	JMP isCheck
+	JZ isCheck
 
 	done:
 	ENDM
@@ -497,6 +496,7 @@ checkCheckN PROC
 
 	isCheck:
 		POP eax			; Leftover, discard
+		POP eax			;
 		MOV eax, TRUE
 
 	checkedN:
@@ -563,8 +563,7 @@ checkCheckRQ PROC
 		JMP checkedRQ
 
 	isCheck:
-		POP eax			; Leftovers for checked case
-		POP eax			;
+		ADD esp, 12		; 3 leftover dwords in stack
 		MOV eax, TRUE
 
 	checkedRQ:
@@ -576,65 +575,45 @@ checkCheckRQ ENDP
 
 checkCheckP PROC
 ; @ Return: eax - if coord is checked by pawn, return TRUE, else FALSE
-	PUSH eax
+	PUSH edx
+	PUSH ecx
+	PUSH ebx
+	MOV ebx, 0FFFEFFFFh		; Check left first; overflow gives correct y coord if coord is valid
+	MOV ecx, eax			; Save coord in ecx
+	MOV edx, 'P'
+	MOV dh, 1
+
 	TEST isWhiteMove, TRUE
-	JNZ checkWP1
-		
-	; Check black pawn pos
-	SUB eax, 10001h
-	CALL isValidCoord
-	CMP al, TRUE				; coord x always in al for 1-8
-	JZ checkBP2
-	CALL GetSqrContent
-	CMP al, 'P'
-	JZ isCheckP
+	JZ checkP
+	
+	MOV ebx, 0FFFFh		; To account for overflow
+	ADD edx, 20h
 
-	checkBP2:
-		POP eax
-		PUSH eax
-		SUB eax, 10000h
-		DEC eax
-		CALL isValidCoord
-		CMP al, TRUE
-		JZ checkWP2
-		CALL GetSqrContent
-		CMP al, 'P'
-		JZ isCheckP
-		JMP notCheckP
+	checkP:
+		; Check first pawn pos
+		ADD eax, ebx
+		checkCoord
+		POP eax			; Leftover
 
-	; Check white pawn pos
-	checkWP1:
-		ADD eax, 10001h
-		CALL isValidCoord
-		CMP al, TRUE
-		JZ checkWP2
-		CALL GetSqrContent
-		CMP al, 'p'
-		JZ isCheckP
+		; Check second pawn pos
+		MOV eax, ecx
+		ADD ebx, 2		; Shift x coord by 2
+		ADD eax, ebx
+		checkCoord
+		POP eax			; Leftover
 
-	checkWP2:
-		POP eax
-		PUSH eax
-		ADD eax, 10000h
-		DEC eax
-		CALL isValidCoord
-		CMP al, TRUE
-		JZ checkWP2
-		CALL GetSqrContent
-		CMP al, 'p'
-		JZ isCheckP
-		JMP notCheckP
-
-	notCheckP:
-		POP eax
+	notCheck:
 		MOV eax, FALSE
 		JMP checkedP
 	
-	isCheckP:
-		POP eax
+	isCheck:
+		POP eax			; Leftover
 		MOV eax, TRUE
 
 	checkedP:
+	POP ebx
+	POP ecx
+	POP edx
 	RET
 checkCheckP ENDP
 
