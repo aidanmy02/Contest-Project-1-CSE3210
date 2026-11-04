@@ -16,10 +16,12 @@ prevMove MOVESTRUCT <>
 checkMove MOVESTRUCT <>
 isFwd2 BYTE FALSE
 
-wKingCastle BYTE 4 DUP(0)		; 3 Bools:	1. True if king has moved
-bKingCastle BYTE 4 DUP(0)		;			2. True if a file rook has moved
-								;			3. True if h file rook has moved
-								; Null terminated for alignment
+castle BYTE 8 DUP(0)		; 4 Bools each king:	1. True if king has moved
+							;						2. True if a file rook has moved
+							;						3. True if h file rook has moved
+							;						4. Used return side of castle:
+							;							- False = queenside
+							;							- True = kingside
 
 .code
 MoveProc PROC
@@ -381,6 +383,16 @@ qMove ENDP
 ; King move
 kMove PROC
 	; Get diff between source and dest
+	PUSH edx				; Save for castle call since it uses rMove
+	PUSH ebx				;
+
+	MOV eax, curHL.coord	; If castle, checkCastle sends message for erasing
+	CALL checkCastle		;
+	POP edx					;
+	POP ebx					;
+	TEST al, TRUE			;
+	JNZ validK				;
+
 	MOVZX eax, dx
 	SUB al, bl
 	SUB ah, bh
@@ -411,6 +423,7 @@ kMove PROC
 	JNZ invalidK
 
 	validK:
+		
 		MOV eax, TRUE
 		JMP kMoveFound
 
@@ -424,26 +437,50 @@ kMove ENDP
 ;
 checkCastle PROC
 ; @Params:	eax - coordinate to check for castle
-	PUSH esi
-	PUSH eax
+; @Return:	esi - castle array at correct offset for color
 	MOV al, prevHL.piece
+	MOV esi, OFFSET castle
 	CMP al, 'K'
-	JZ wKC
+	JZ castleCheck
 	
-	MOV esi, OFFSET bKingCastle
-	JMP castleCheck
-
-	wKC:
-	MOV esi, OFFSET wKingCastle
+	ADD esi, 4
 
 	castleCheck:
-	
+		TEST BYTE PTR [esi], TRUE
+		JNZ invalidCastle
 
-	invlaidCastle:
+		TEST BYTE PTR [esi + 1], TRUE
+		JNZ kingSideCastle
+
+		PUSH esi
+		PUSH edx
+		PUSH ebx
+		CALL rMove
+		POP ebx
+		POP edx
+		POP esi
+		CMP al, TRUE
+		JNZ invalidCastle
+		MOV BYTE PTR [esi + 3], FALSE
+		JMP doCastle
+
+	kingSideCastle:
+		TEST BYTE PTR [esi + 2], TRUE
+		JNZ kingSideCastle
+
+		CALL rMove
+		CMP al, TRUE
+		JNZ invalidCastle
+		MOV BYTE PTR [esi + 3], TRUE
+
+		doCastle:
+
+		JMP castleFound
+			
+	invalidCastle:
 		MOV eax, FALSE
 
 	castleFound:
-	POP esi
 	RET
 checkCastle ENDP
 

@@ -221,7 +221,7 @@ GetSqrColor PROC
 
 	; If even, then white
 	TEST eax, 1
-	JZ whiteSqr
+	JNZ whiteSqr
 
 	; Else, black
 	MOV eax, BLACK
