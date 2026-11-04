@@ -6,6 +6,7 @@ PUBLIC MoveProc
 PUBLIC prevMove
 
 EXTERN board:BOARDSTRUCT
+EXTERN isWhiteMove:BYTE
 EXTERNDEF curHL:MOVESTRUCT
 EXTERNDEF prevHL:MOVESTRUCT
 
@@ -403,5 +404,38 @@ kMove PROC
 	kMoveFound:
 	RET
 kMove ENDP
+
+;
+checkCheck PROC
+; @Params:	eax - coordinate to check for check	
+	TEST isWhiteMove, TRUE
+	JZ checkWP
+
+	checkWP:
+	ADD eax, 10001h
+	RET
+checkCheck ENDP
+
+isValidCoord PROC
+	CMP ax, 1
+	JL invalidMv
+	CMP ax, 8
+	JG invalidMv
+	SHR eax, 16
+	CMP ax, 1
+	JL invalidMV
+	CMP ax, 8
+	JG invalidMv
+
+	validMv:
+	MOV eax, TRUE
+	JMP checkedValidity
+
+	invalidMv:
+	MOV eax, FALSE
+
+	checkedValidity:
+	RET
+isValidCoord ENDP
 
 END

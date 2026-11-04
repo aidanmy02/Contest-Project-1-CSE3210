@@ -3,6 +3,7 @@ INCLUDE Chess.inc
 PUBLIC board
 PUBLIC curHL
 PUBLIC prevHL
+PUBLIC isWhiteMove
 PUBLIC GetSqrContent
 
 EXTERN MoveProc:PROTO
