@@ -418,12 +418,75 @@ checkCheck PROC
 	CALL checkCheckP
 	TEST al, TRUE
 	JNZ gotCheckStatus
+	
+	POP eax
+	PUSH eax
+	CALL checkCheckRQ
+	TEST al, TRUE
+	JNZ gotCheckStatus
 
 	gotCheckStatus:
 	ADD esp, 4			; Always have a leftover push at the end
 	RET
 	RET
 checkCheck ENDP
+
+checkConflictK PROC
+	RET
+checkConflictK ENDP
+
+checkCheckBQ PROC
+	RET
+checkCheckBQ ENDP
+
+checkCheckN PROC
+	RET
+checkCheckN ENDP
+
+
+checkCheckRQ PROC
+; @ Return: eax - if coord is checked by rook or queen, return TRUE, else FALSE
+	PUSH eax
+	PUSH edx
+	PUSH ecx
+	PUSH ebx
+
+	MOV edx, 'R'
+	MOV dh, 'Q'
+	TEST isWhiteMove, TRUE
+	JZ piecesSetRQ
+
+	ADD edx, 2020h				; Make lower case for check 
+	
+	piecesSetRQ:
+		MOV ebx, 10000h
+		MOV ecx, 8				; Max spaces a piece can move is 8 - 1 = 7
+
+	; Vertical loop
+	startLoopNSRQ:
+		LOOP loopNSRQ
+		JMP endLoopNSRQ
+	loopNSRQ:
+
+	endLoopNSRQ:
+	
+	initLoopEWRQ:
+
+	isCheckRQ:
+		POP eax
+		MOV eax, TRUE
+		JMP checkedRQ
+
+	notCheckRQ:
+		POP eax
+		MOV eax, FALSE
+
+	checkedRQ:
+	POP ebx
+	POP ecx
+	POP edx
+	RET
+checkCheckRQ ENDP
 
 checkCheckP PROC
 ; @ Return: eax - if coord is checked by pawn, return TRUE, else FALSE
