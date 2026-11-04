@@ -425,11 +425,41 @@ checkCheck PROC
 	TEST al, TRUE
 	JNZ gotCheckStatus
 
+	POP eax
+	PUSH eax
+	CALL checkCheckN
+	TEST al, TRUE
+	JNZ gotCheckStatus
+
 	gotCheckStatus:
 	ADD esp, 4			; Always have a leftover push at the end
 	RET
 	RET
 checkCheck ENDP
+
+; @Desc: Checks for check
+checkCoord MACRO
+; @Params:	eax - contains DWORD coord
+;			dx  - contains one or two pieces in high and low bytes
+;					if one piece, upper byte contains 1
+
+	PUSH eax
+	CALL isValidCoord
+	CMP al, FALSE
+	JZ done
+	POP eax
+	PUSH eax
+	CALL GetSqrContent
+	CMP al, dl
+	JNZ done
+	CMP al, dh
+	JNZ done
+	POP edx			; Leftover, discard
+	JMP isCheck
+
+	done:
+	POP eax
+	ENDM
 
 checkConflictK PROC
 	RET
@@ -442,9 +472,9 @@ checkCheckBQ ENDP
 checkCheckN PROC
 	PUSH edx
 	PUSH ebx
-	PUSH eax
 	MOV ebx, 10002h
 	MOV edx, 'N'		; Piece to check for
+	MOV dh, 1			; To not conflict with NULL for empty space
 	
 	TEST isWhiteMove, TRUE
 	JZ CheckCoord1N
@@ -452,27 +482,24 @@ checkCheckN PROC
 	ADD dl, 20h			; Make lower case if it is white's turn
 
 	checkCoord1N:
+		PUSH eax
 		ADD eax, ebx
-		PUSH eax
-		CALL isValidCoord
-		CMP al, FALSE
-		JZ checkCoord2N
+		checkCoord
 		POP eax
-		PUSH eax
-		CALL GetSqrContent
-		CMP al, dl
-		JZ isCheckN
+
 	checkCoord2N:
 
-	notCheckN:
+	notCheck:
 		MOV eax, FALSE
 		JMP checkedN
 
-	isCheckN:
+	isCheck:
 		POP eax			; Leftover, discard
 		MOV eax, TRUE
 
 	checkedN:
+	POP ebx
+	POP edx
 	RET
 checkCheckN ENDP
 
