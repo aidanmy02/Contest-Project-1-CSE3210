@@ -440,6 +440,39 @@ checkCheckBQ PROC
 checkCheckBQ ENDP
 
 checkCheckN PROC
+	PUSH edx
+	PUSH ebx
+	PUSH eax
+	MOV ebx, 10002h
+	MOV edx, 'N'		; Piece to check for
+	
+	TEST isWhiteMove, TRUE
+	JZ CheckCoord1N
+
+	ADD dl, 20h			; Make lower case if it is white's turn
+
+	checkCoord1N:
+		ADD eax, ebx
+		PUSH eax
+		CALL isValidCoord
+		CMP al, FALSE
+		JZ checkCoord2N
+		POP eax
+		PUSH eax
+		CALL GetSqrContent
+		CMP al, dl
+		JZ isCheckN
+	checkCoord2N:
+
+	notCheckN:
+		MOV eax, FALSE
+		JMP checkedN
+
+	isCheckN:
+		POP eax			; Leftover, discard
+		MOV eax, TRUE
+
+	checkedN:
 	RET
 checkCheckN ENDP
 
