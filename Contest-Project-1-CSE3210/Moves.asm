@@ -23,8 +23,8 @@ castle BYTE 8 DUP(0)		; 4 Bools each king:	1. True if king has moved
 							;							- False = queenside
 							;							- True = kingside
 
-wKingPos MOVESTRUCT <,<5,1>,'K',BLACK>
-bKingPos MOVESTRUCT <,<5,8>,'k',WHITE>
+wKingPos MOVESTRUCT <NULL,<5,1>,'K',BLACK>
+bKingPos MOVESTRUCT <NULL,<5,8>,'k',WHITE>
 
 .code
 MoveProc PROC
@@ -125,12 +125,43 @@ MoveProc PROC
 	REP MOVSB
 	POP edi
 
+	SUB esi, SIZEOF MOVESTRUCT
+	MOV (MOVESTRUCT PTR [esi]).uMsg, MV_CHECKED
+
 	MOV checkMove.uMsg, BP_CHECK
+	MOV checkMove.sqrColor, CHECKHL
 	MOV eax, OFFSET checkMove
 	PUSH eax
 	CALL BoardProc
+	JMP doneMvProc
 
 	mvDone:
+	MOV esi, OFFSET wKingPos
+	CMP wKingPos.uMsg, MV_CHECKED
+	JZ whiteChecked
+	CMP bKingPos.uMsg, MV_CHECKED
+	JNZ doneMvProc
+	MOV esi, OFFSET bKingPos
+	
+	whiteChecked:
+	PUSH edi
+	MOV edi, OFFSET checkMove
+	MOV ecx, SIZEOF MOVESTRUCT
+	REP MOVSB
+	POP edi
+
+	SUB esi, SIZEOF MOVESTRUCT
+	MOV checkMove.uMsg, BP_COLOR
+	MOV eax, OFFSET checkMove
+	PUSH eax
+	PUSH eax			; Push for second proc
+	CALL BoardProc
+	MOV al, checkMove.sqrColor
+	MOV (MOVESTRUCT PTR [esi]).sqrColor, al
+	MOV checkMove.uMsg, BP_CHECK
+	CALL BoardProc
+
+	doneMvProc:
 	POP ebx			; Restore registers
 	POP ecx			;
 	POP edx			;

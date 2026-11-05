@@ -131,7 +131,6 @@ BoardProc PROC
 		JMP bpDone
 
 	bpCheck:
-		MOV (MOVESTRUCT PTR [esi]).sqrColor, CHECKHL
 		INVOKE SendMessageA,	hWndMain,\
 								WM_SQR,\
 								esi,\

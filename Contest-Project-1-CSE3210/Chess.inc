@@ -35,6 +35,7 @@ BP_CHECK EQU 7
 
 ; MoveProc Codes
 MV_CHECK EQU 1
+MV_CHECKED EQU 2
 
 ; HeapAlloc Codes
 HEAP_ZERO_MEMORY EQU 8
