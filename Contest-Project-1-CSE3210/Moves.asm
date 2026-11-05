@@ -23,6 +23,9 @@ castle BYTE 8 DUP(0)		; 4 Bools each king:	1. True if king has moved
 							;							- False = queenside
 							;							- True = kingside
 
+wKingPos COORDSTRUCT <5,1>
+bKingPos COORDSTRUCT <5,8>
+
 .code
 MoveProc PROC
 	PUSH esi		; Save ebx, ecx, edx, esi since they will be used in processing moves
@@ -92,7 +95,7 @@ MoveProc PROC
 	REP MOVSB						;
 	MOV bl, prevHL.piece
 	MOV prevMove.piece, bl			; Save moved piece in prevMove
-	
+
 	mvDone:
 	POP ebx			; Restore registers
 	POP ecx			;
@@ -438,6 +441,15 @@ kMove PROC
 	JNZ invalidK
 
 	validK:
+		MOV eax, curHL.Coord
+		TEST isWhiteMove, TRUE
+		JNZ setWKingPos
+		MOV bKingPos, eax
+		JMP endValidK
+		setWKingPos:
+		MOV wKingPos, eax
+		
+		endValidK:
 		POP esi
 		MOV BYTE PTR [esi], TRUE		; King has moved
 		MOV eax, TRUE
