@@ -266,7 +266,7 @@ rMove PROC
 	setRStat:
 	MOV ax, WORD PTR [ebx]
 	XOR ax, 0101h						; Check if both flags have been set
-	JNZ castleStatusSet					;
+	JZ castleStatusSet					;
 	CALL setRookStatus					; Set move status if not both have moved
 	castleStatusSet:
 	POP ebx
@@ -399,7 +399,7 @@ kMove PROC
 	; Get diff between source and dest
 	PUSH edx				; Save for castle call since it uses rMove
 	PUSH ebx				;
-
+	
 	MOV eax, curHL.coord	; If castle, checkCastle sends message for erasing
 	CALL checkCastle		;
 	POP edx					;
@@ -484,7 +484,8 @@ setRookStatus ENDP
 checkCastle PROC
 ; @Params:	eax - coordinate to check for castle
 ; @Return:	esi - castle array at correct offset for color
-	PUSH esi
+	LOCAL buf[SIZEOF MOVESTRUCT * 2]
+
 	MOV esi, OFFSET castle
 	CMP prevHL.piece, 'K'
 	JZ castleCheck
@@ -492,42 +493,113 @@ checkCastle PROC
 	ADD esi, 4
 
 	castleCheck:
+		PUSH esi
 		TEST BYTE PTR [esi], TRUE		; If king has moved
-		JNZ invalidCastle				
+		JNZ invalidCastle
+		MOVZX eax, dl
+		SUB al, bl
+		CMP al, NULL
+		JG gotAbs
+		NEG al
+		gotAbs:
+		CMP al, 2
+		JNZ invalidCastle
 		CMP curHL.coord.y, 1			; Check for correct rows
-		JZ kingSideCastle				;
+		JZ checkCastleType				;
 		CMP curHL.coord.y, 8			;
 		JNZ invalidCastle				;
+		checkCastleType:
+		CMP dl, bl
+		JA kingSideCastle
 		CMP BYTE PTR[esi + 1], TRUE		; a file rook has moved if true
-		JZ kingSideCastle				;
+		JZ invalidCastle				;
 		
 		MOV BYTE PTR [esi + 3], FALSE	; Set queenside castle
-		SUB curHL.coord.x, 1			; Check square after where king clicks to castle too
+		MOV cl, 1						; For setting end coord
 		JMP checkEmpty
 
 	kingSideCastle:
 		TEST BYTE PTR [esi + 2], TRUE
 		JNZ invalidCastle
 		MOV BYTE PTR [esi + 3], TRUE	; Set kingside castle
+		MOV cl, 8						; For setting end coord
 
 	checkEmpty:
 		PUSH esi
 		PUSH edx
 		PUSH ebx
+		MOV dl, cl
 		CALL rMove
 		POP ebx
 		POP edx
 		POP esi
-		TEST BYTE PTR [esi + 3], TRUE	; Restore correct coord if queenside was tested
-		JNZ notQueenside				;
-		ADD prevHL.coord.x, 1			;
-		notQueenside:					;
 		TEST al, TRUE
 		JZ invalidCastle
 
-	doCastle:
+		PUSH esi
+		MOV esi, OFFSET prevHL			; Save prev position
+		LEA edi, buf					;
+		MOV ecx, SIZEOF MOVESTRUCT		;
+		REP MOVSB
 
-		MOV DWORD PTR [esi], 01010100h
+		MOV esi, OFFSET curHL			; Save new position
+		MOV ecx, SIZEOF MOVESTRUCT		;
+		REP MOVSB
+		POP esi
+
+		MOV al, prevHL.piece
+		MOV ah, 'R'
+		CMP al, 'K'
+		JZ whiteCastle
+		ADD ah, 20h		
+		whiteCastle:
+			PUSH esi
+			TEST BYTE PTR [esi + 3], TRUE
+			JNZ castleKingside
+		
+		SUB prevHL.coord.x, 4	; Queenside rook 4 away from king
+		ADD curHL.coord.x, 1	; Rook ends up to right of king
+		JMP doCastle
+
+		castleKingside:
+			ADD prevHL.coord.x, 3	; Queenside rook 4 away from king
+			SUB curHL.coord.x, 1	; Rook ends up to right of king
+
+		doCastle:
+			MOV curHL.piece, ah
+			MOV prevHL.piece, NULL
+			
+			MOV prevHL.uMsg, BP_COLOR
+			MOV eax, OFFSET prevHL
+			PUSH eax
+			CALL BoardProc
+
+			MOV curHL.uMsg, BP_COLOR
+			MOV eax, OFFSET curHL
+			PUSH eax
+			CALL BoardProc
+
+			MOV prevHL.uMsg, BP_CASTLE
+			MOV eax, OFFSET prevHL
+			PUSH eax
+			CALL BoardProc
+
+		POP esi
+		PUSH esi
+
+		LEA esi, buf					; Return prev position
+		MOV edi, OFFSET prevHL			;
+		MOV ecx, SIZEOF MOVESTRUCT		;
+		REP MOVSB
+
+		MOV edi, OFFSET curHL			; Return new position
+		MOV ecx, SIZEOF MOVESTRUCT		;
+		REP MOVSB
+
+		POP esi
+
+		MOV DWORD PTR [esi], 10101h
+		MOV eax, TRUE
 		JMP castleFound
 			
 	invalidCastle:

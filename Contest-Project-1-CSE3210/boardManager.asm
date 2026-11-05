@@ -115,9 +115,14 @@ BoardProc PROC
 		MOVZX eax, prevHL.piece
 		PUSH eax
 		MOV eax, curHL.coord
+		CALL SetSqrContent
 		INVOKE SendMessageA,	hWndMain,\
 								WM_SQR,\
-								esi,\
+								ADDR prevHL,\
+								NULL
+		INVOKE SendMessageA,	hWndMain,\
+								WM_SQR,\
+								ADDR curHL,\
 								NULL
 		JMP bpDone
 
