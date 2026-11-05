@@ -256,6 +256,20 @@ rMove PROC
 			JMP startLoopR
 
 	validR:
+	PUSH ebx
+	MOV ebx, OFFSET castle + 1			; Get correct color rook flags for movement
+	CMP prevHL.piece, 'R'				;
+	JZ setRStat							;
+	CMP prevHL.piece, 'r'				;
+	JNZ castleStatusSet					; If it is castle method calling this, it does not mutate castle
+	ADD ebx, 4							;
+	setRStat:
+	MOV ax, WORD PTR [ebx]
+	XOR ax, 0101h						; Check if both flags have been set
+	JNZ castleStatusSet					;
+	CALL setRookStatus					; Set move status if not both have moved
+	castleStatusSet:
+	POP ebx
 	MOV eax, TRUE
 	JMP rMvFound
 
@@ -390,6 +404,7 @@ kMove PROC
 	CALL checkCastle		;
 	POP edx					;
 	POP ebx					;
+	PUSH esi				;
 	TEST al, TRUE			;
 	JNZ validK				;
 
@@ -423,35 +438,79 @@ kMove PROC
 	JNZ invalidK
 
 	validK:
-		
+		POP esi
+		MOV BYTE PTR [esi], TRUE		; King has moved
 		MOV eax, TRUE
 		JMP kMoveFound
 
 	invalidK:
 		MOV eax, FALSE
+		POP esi
 
 	kMoveFound:
 	RET
 kMove ENDP
 
 ;
+setRookStatus PROC
+; @Comment: Used to set movement status for castle if both rooks have not moved yet
+	PUSH esi
+	MOV esi, OFFSET castle
+	MOV al, prevHL.piece
+	CMP al, 'R'
+	JZ castleStatus
+
+	ADD esi, 4
+
+	castleStatus:
+	TEST BYTE PTR [esi + 1], TRUE	; Check if a file rook has moved
+	JZ setHRookStatus				;
+
+	CMP prevHL.coord.x, 1			; Check if prevHL is in the a file
+	JNZ setHRookStatus				;
+
+	MOV BYTE PTR [esi + 1], TRUE
+	JMP setStatus
+
+	setHRookStatus:
+	MOV BYTE PTR [esi + 2], TRUE
+
+	setStatus:
+	POP esi
+	RET
+setRookStatus ENDP
+
+;
 checkCastle PROC
 ; @Params:	eax - coordinate to check for castle
 ; @Return:	esi - castle array at correct offset for color
-	MOV al, prevHL.piece
+	PUSH esi
 	MOV esi, OFFSET castle
-	CMP al, 'K'
+	CMP prevHL.piece, 'K'
 	JZ castleCheck
 	
 	ADD esi, 4
 
 	castleCheck:
-		TEST BYTE PTR [esi], TRUE
+		TEST BYTE PTR [esi], TRUE		; If king has moved
+		JNZ invalidCastle				
+		CMP curHL.coord.y, 1			; Check for correct rows
+		JZ kingSideCastle				;
+		CMP curHL.coord.y, 8			;
+		JNZ invalidCastle				;
+		CMP BYTE PTR[esi + 1], TRUE		; a file rook has moved if true
+		JZ kingSideCastle				;
+		
+		MOV BYTE PTR [esi + 3], FALSE	; Set queenside castle
+		SUB curHL.coord.x, 1			; Check square after where king clicks to castle too
+		JMP checkEmpty
+
+	kingSideCastle:
+		TEST BYTE PTR [esi + 2], TRUE
 		JNZ invalidCastle
+		MOV BYTE PTR [esi + 3], TRUE	; Set kingside castle
 
-		TEST BYTE PTR [esi + 1], TRUE
-		JNZ kingSideCastle
-
+	checkEmpty:
 		PUSH esi
 		PUSH edx
 		PUSH ebx
@@ -459,28 +518,22 @@ checkCastle PROC
 		POP ebx
 		POP edx
 		POP esi
-		CMP al, TRUE
-		JNZ invalidCastle
-		MOV BYTE PTR [esi + 3], FALSE
-		JMP doCastle
-
-	kingSideCastle:
-		TEST BYTE PTR [esi + 2], TRUE
-		JNZ kingSideCastle
-
-		CALL rMove
-		CMP al, TRUE
-		JNZ invalidCastle
-		MOV BYTE PTR [esi + 3], TRUE
+		TEST BYTE PTR [esi + 3], TRUE	; Restore correct coord if queenside was tested
+		JNZ notQueenside				;
+		ADD prevHL.coord.x, 1			;
+		notQueenside:					;
+		TEST al, TRUE
+		JZ invalidCastle
 
 		doCastle:
-
+		MOV DWORD PTR [esi], 01010100h
 		JMP castleFound
 			
 	invalidCastle:
 		MOV eax, FALSE
 
 	castleFound:
+	POP esi
 	RET
 checkCastle ENDP
 
