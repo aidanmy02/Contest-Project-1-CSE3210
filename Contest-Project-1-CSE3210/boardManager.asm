@@ -39,6 +39,9 @@ BoardProc PROC
 	JZ bpInit
 	CMP eax, BP_ENPASSANT
 	JZ bpEnPassant
+	CMP eax, BP_CASTLE
+	JZ bpCastle
+	JMP bpDone
 
 	bpInit:
 		CALL InitBoard
@@ -97,6 +100,21 @@ BoardProc PROC
 		PUSH NULL
 		MOV eax, (MOVESTRUCT PTR [esi]).coord
 		CALL SetSqrContent
+		INVOKE SendMessageA,	hWndMain,\
+								WM_SQR,\
+								esi,\
+								NULL
+		JMP bpDone
+
+	bpCastle:
+		; MoveProc calls once for rook, king is handled in return to case BP_MOVE
+		PUSH NULL
+		MOV eax, prevHL.coord
+		CALL SetSqrContent
+
+		MOVZX eax, prevHL.piece
+		PUSH eax
+		MOV eax, curHL.coord
 		INVOKE SendMessageA,	hWndMain,\
 								WM_SQR,\
 								esi,\

@@ -525,7 +525,8 @@ checkCastle PROC
 		TEST al, TRUE
 		JZ invalidCastle
 
-		doCastle:
+	doCastle:
+
 		MOV DWORD PTR [esi], 01010100h
 		JMP castleFound
 			
