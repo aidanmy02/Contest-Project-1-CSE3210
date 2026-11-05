@@ -112,7 +112,7 @@ BoardProc PROC
 		MOV eax, prevHL.coord
 		CALL SetSqrContent
 
-		MOVZX eax, prevHL.piece
+		MOVZX eax, curHL.piece
 		PUSH eax
 		MOV eax, curHL.coord
 		CALL SetSqrContent

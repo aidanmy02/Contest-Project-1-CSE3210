@@ -463,9 +463,6 @@ setRookStatus PROC
 	ADD esi, 4
 
 	castleStatus:
-	TEST BYTE PTR [esi + 1], TRUE	; Check if a file rook has moved
-	JZ setHRookStatus				;
-
 	CMP prevHL.coord.x, 1			; Check if prevHL is in the a file
 	JNZ setHRookStatus				;
 

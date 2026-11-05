@@ -58,10 +58,6 @@ hHLBr DWORD ?
 errMsg DWORD ?			; Input Param
 
 .data
-;TODO: For tests remove later
-buffer BYTE 128 DUP(0)
-bufferSize DWORD SIZEOF buffer
-
 ; Params for WNDCLASSEXA Struct
 className BYTE "Wnd",0
 
@@ -93,9 +89,8 @@ updateRect RECT 64 DUP(<>)
 ; Initialize PAINTSTRUCT
 paintParam PAINTSTRUCT <>
 
-; TODO: figure out name
 ; Params for CreateWindowExA
-wndName BYTE "Testing Testing 123", 0
+wndName BYTE "CatChess", 0
 
 ; Params for GetMessage
 PUBLIC msg
@@ -115,14 +110,13 @@ imgBB BYTE "Pieces\black_bishop.bmp", 0
 imgBQ BYTE "Pieces\black_queen.bmp", 0
 imgBK BYTE "Pieces\black_king.bmp", 0
 
-; TODO: add back white pieces when done
 ; Offsets of img names
-imgNames DWORD	OFFSET imgWQ,\
+imgNames DWORD	OFFSET imgWP,\
+				OFFSET imgWR,\
+				OFFSET imgWN,\
+				OFFSET imgWB,\
 				OFFSET imgWQ,\
-				OFFSET imgWQ,\
-				OFFSET imgWQ,\
-				OFFSET imgWQ,\
-				OFFSET imgWQ,\
+				OFFSET imgWK,\
 				OFFSET imgBP,\
 				OFFSET imgBR,\
 				OFFSET imgBN,\
@@ -454,25 +448,6 @@ toggleHL PROC
 								NULL					; lParam
 		RET
 toggleHL ENDP
-
-;
-getPieceDC PROC
-;	@ Params:	eax - piece offset
-;	@ Return:	eax - piece DC handle
-	CMP al, NULL			; Empty square
-	JZ gotPieceDC
-
-	COMMENT @		; TODO: add back when more pieces available
-	CMP al, 
-	JZ getWQueenDC
-	@
-	getWQueenDC:
-		MOV eax, hPieceDC
-		JMP gotPieceDC
-
-	gotPieceDC:
-	RET
-getPieceDC ENDP
 
 ;
 transCoordsToWnd PROC
