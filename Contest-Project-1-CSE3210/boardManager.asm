@@ -41,6 +41,8 @@ BoardProc PROC
 	JZ bpEnPassant
 	CMP eax, BP_CASTLE
 	JZ bpCastle
+	CMP eax, BP_CHECK
+	JZ bpCheck
 	JMP bpDone
 
 	bpInit:
@@ -90,9 +92,11 @@ BoardProc PROC
 								WM_SQR,\			; uMsg
 								ADDR prevHL,\		; wParam
 								NULL				; lParam
-
+		
 		; Next player's move
 		XOR isWhiteMove, TRUE
+		MOV eax, MV_CHECK
+		CALL MoveProc
 		JMP bpDone
 
 	bpEnPassant:
@@ -125,6 +129,13 @@ BoardProc PROC
 								ADDR curHL,\
 								NULL
 		JMP bpDone
+
+	bpCheck:
+		MOV (MOVESTRUCT PTR [esi]).sqrColor, HL
+		INVOKE SendMessageA,	hWndMain,\
+								WM_SQR,\
+								esi,\
+								NULL
 
 	bpDone:
 	POP ebp
@@ -224,6 +235,7 @@ isValidMove PROC
 
 	; Cur selection has valid contents for move
 	validateMove:
+	XOR eax, eax
 	CALL MoveProc
 	retMove:
 	RET

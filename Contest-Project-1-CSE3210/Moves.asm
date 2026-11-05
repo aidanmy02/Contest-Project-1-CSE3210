@@ -23,8 +23,8 @@ castle BYTE 8 DUP(0)		; 4 Bools each king:	1. True if king has moved
 							;							- False = queenside
 							;							- True = kingside
 
-wKingPos COORDSTRUCT <5,1>
-bKingPos COORDSTRUCT <5,8>
+wKingPos MOVESTRUCT <,<5,1>,'K',BLACK>
+bKingPos MOVESTRUCT <,<5,8>,'k',WHITE>
 
 .code
 MoveProc PROC
@@ -32,6 +32,9 @@ MoveProc PROC
 	PUSH edx		;
 	PUSH ecx		;
 	PUSH ebx		; 
+
+	CMP eax, MV_CHECK
+	JZ check4check
 
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
@@ -87,7 +90,7 @@ MoveProc PROC
 	JMP mvCheck
 
 	mvCheck:
-	CMP al, TRUE
+	TEST al, TRUE
 	JNZ mvDone
 	MOV esi, OFFSET curHL			; Save new position in prevMove
 	MOV edi, OFFSET prevMove		;
@@ -95,6 +98,37 @@ MoveProc PROC
 	REP MOVSB						;
 	MOV bl, prevHL.piece
 	MOV prevMove.piece, bl			; Save moved piece in prevMove
+
+	check4Check:
+	TEST isWhiteMove, TRUE
+	JNZ checkWhiteChecked
+	MOV ebx, OFFSET bKingPos
+	PUSH ebx
+	MOV eax, bKingPos.coord
+	JMP checkChecked
+
+	checkWhiteChecked:
+	MOV ebx, OFFSET wKingPos
+	PUSH ebx
+	MOV eax, wKingPos.coord
+
+	checkChecked:
+	CALL checkCheck
+	POP ebx					; Discard if not check
+	TEST al, TRUE
+	JZ mvDone
+
+	PUSH edi
+	MOV edi, OFFSET checkMove
+	MOV esi, ebx
+	MOV ecx, SIZEOF MOVESTRUCT
+	REP MOVSB
+	POP edi
+
+	MOV checkMove.uMsg, BP_CHECK
+	MOV eax, OFFSET checkMove
+	PUSH eax
+	CALL BoardProc
 
 	mvDone:
 	POP ebx			; Restore registers
@@ -441,15 +475,20 @@ kMove PROC
 	JNZ invalidK
 
 	validK:
-		MOV eax, curHL.Coord
 		TEST isWhiteMove, TRUE
 		JNZ setWKingPos
-		MOV bKingPos, eax
-		JMP endValidK
+		MOV edi, OFFSET bKingPos
+		JMP copyKingPos
 		setWKingPos:
-		MOV wKingPos, eax
+		MOV edi, OFFSET bKingPos
 		
-		endValidK:
+		copyKingPos:
+		PUSH edi
+		MOV esi, OFFSET curHL
+		MOV ecx, SIZEOF MOVESTRUCT
+		REP MOVSB
+		POP edi
+
 		POP esi
 		MOV BYTE PTR [esi], TRUE		; King has moved
 		MOV eax, TRUE
@@ -645,9 +684,10 @@ checkCheck PROC
 	TEST al, TRUE
 	JNZ gotCheckStatus
 
+	MOV eax, FALSE
+
 	gotCheckStatus:
 	ADD esp, 4			; Always have a leftover push at the end
-	RET
 	RET
 checkCheck ENDP
 
