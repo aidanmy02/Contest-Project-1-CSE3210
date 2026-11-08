@@ -716,6 +716,64 @@ checkCastle PROC
 	RET
 checkCastle ENDP
 
+check4Mate MACRO
+
+ENDM
+
+;
+checkCheckMate PROC
+; @Params:	eax - coordinate to check for checkmate
+	PUSH edx
+	MOV edx, 'K'		; Piece to check for
+	MOV dh, 1			; To not conflict with NULL for empty space
+	
+	TEST isWhiteMove, TRUE
+	JZ startCheckK
+
+	ADD dl, 20h			; Make lower case if it is white's turn
+
+	startCheckK:
+		ADD eax, 10001h	; Check (1,1)
+		check4Mate		;
+		POP eax			; Leftover from macro
+		
+		DEC ax			; Check (1, 0)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+		DEC ax			; Check (1, -1)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+		ROL eax, 16		; Check (-1, 1)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+		DEC ax			; Check (-1, 0)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+		DEC ax			; Check (-1, -1)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+		AND eax, 1		; Check (0, 1)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+	notCheck:
+		MOV eax, FALSE
+		JMP checked4Mate
+
+	isCheck:
+		POP eax			; Leftover, discard
+		MOV eax, TRUE
+
+	checked4Mate:
+	POP edx
+	RET
+checkCheckMate ENDP
+
 ;
 checkCheck PROC
 ; @Params:	eax - coordinate to check for check
@@ -784,11 +842,11 @@ checkConflictK PROC
 	MOV dh, 1			; To not conflict with NULL for empty space
 	
 	TEST isWhiteMove, TRUE
-	JZ startCheckN
+	JZ startCheckK
 
 	ADD dl, 20h			; Make lower case if it is white's turn
 
-	startCheckN:
+	startCheckK:
 		ADD eax, 10001h	; Check (1,1)
 		checkCoord		;
 		POP eax			; Leftover from macro
@@ -819,13 +877,13 @@ checkConflictK PROC
 
 	notCheck:
 		MOV eax, FALSE
-		JMP checkedN
+		JMP checkedK
 
 	isCheck:
 		POP eax			; Leftover, discard
 		MOV eax, TRUE
 
-	checkedN:
+	checkedK:
 	POP edx
 	RET
 checkConflictK ENDP
