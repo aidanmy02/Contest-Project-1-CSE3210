@@ -111,11 +111,11 @@ MoveProc PROC
 	JMP mvCheck
 
 	testCheck:
-	check4Check
+	check4Check						;
 	JMP doneMvProc					; Return result of check inquiry to board proc
 
 	mvCheck:
-	CMP al, FALSE					; Check if new position is valid
+ 	CMP al, FALSE					; Check if new position is valid
 	JZ doneMvProc
 
 	PUSH eax						; Change board to new position to check if still in check
@@ -135,11 +135,14 @@ MoveProc PROC
 	REP MOVSB						;
 	MOV bl, prevHL.piece
 	MOV prevMove.piece, bl			; Save moved piece in prevMove
-
+	JMP mvDone
 
 	checkCheckMv:
-	check4Check
-	TEST al, TRUE
+	PUSH eax
+	check4Check						; Check if the move puts the opponent in check
+	MOV ecx, eax					; Put check status in ecx
+	POP eax							; Put return value of move validity in eax
+	TEST cl, TRUE
 	JZ mvDone
 
 	PUSH edi

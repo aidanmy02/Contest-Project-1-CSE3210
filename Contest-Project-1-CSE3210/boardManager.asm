@@ -76,20 +76,9 @@ BoardProc PROC
 		; Move prevHL.piece into curHL.piece
 		MOVZX eax, prevHL.piece
 		MOV curHL.piece, al
-
-		; Change dest board content
-		PUSH eax
-		MOV eax, curHL.coord
-		CALL SetSqrContent
-
-		; Change source board content
-		XOR eax, eax
-		PUSH eax
-		MOV eax, prevHL.coord
-		CALL SetSqrContent
+		MOV prevHL.piece, NULL
 
 		; Update window
-		MOV prevHL.piece, NULL
 		INVOKE SendMessageA,	hWndMain,\			; hWnd
 								WM_SQR,\			; uMsg
 								ADDR prevHL,\		; wParam
@@ -137,6 +126,7 @@ BoardProc PROC
 								WM_SQR,\
 								esi,\
 								NULL
+		JMP bpDone
 	
 	; Tests if king is still in check in new position
 	bpTestCheck:
@@ -149,6 +139,12 @@ BoardProc PROC
 		MOV eax, curHL.coord
 		CALL SetSqrContent
 
+		MOV eax, MV_TESTCHECK
+		CALL MoveProc
+		TEST al, TRUE			; If not check, then keep current position in board
+		JZ bpDone
+
+		PUSH eax
 		MOVZX eax, curHL.piece
 		PUSH eax
 		MOV eax, curHL.coord
@@ -158,6 +154,7 @@ BoardProc PROC
 		PUSH eax
 		MOV eax, prevHL.coord
 		CALL SetSqrContent
+		POP eax
 		JMP bpDone
 		
 	bpDone:
