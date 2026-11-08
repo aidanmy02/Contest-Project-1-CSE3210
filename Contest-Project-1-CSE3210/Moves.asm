@@ -26,6 +26,25 @@ castle BYTE 8 DUP(0)		; 4 Bools each king:	1. True if king has moved
 wKingPos MOVESTRUCT <NULL,<5,1>,'K',BLACK>
 bKingPos MOVESTRUCT <NULL,<5,8>,'k',WHITE>
 
+check4check MACRO
+	LOCAL checkWhiteChecked, checkChecked
+	TEST isWhiteMove, TRUE
+	JNZ checkWhiteChecked
+	MOV ebx, OFFSET bKingPos
+	PUSH ebx
+	MOV eax, bKingPos.coord
+	JMP checkChecked
+
+	checkWhiteChecked:
+	MOV ebx, OFFSET wKingPos
+	PUSH ebx
+	MOV eax, wKingPos.coord
+
+	checkChecked:
+	CALL checkCheck
+	POP ebx					; Discard if not check
+ENDM
+
 .code
 MoveProc PROC
 	PUSH esi		; Save ebx, ecx, edx, esi since they will be used in processing moves
@@ -34,7 +53,7 @@ MoveProc PROC
 	PUSH ebx		; 
 
 	CMP eax, MV_CHECK
-	JZ check4check
+	JZ checkCheckMv
 
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
@@ -92,6 +111,10 @@ MoveProc PROC
 	mvCheck:
 	TEST al, TRUE
 	JNZ mvDone
+
+	check4Check						; Check if new position
+	CMP al, TRUE					;
+	JNZ mvDone
 	MOV esi, OFFSET curHL			; Save new position in prevMove
 	MOV edi, OFFSET prevMove		;
 	MOV ecx, SIZEOF MOVESTRUCT		;
@@ -99,22 +122,8 @@ MoveProc PROC
 	MOV bl, prevHL.piece
 	MOV prevMove.piece, bl			; Save moved piece in prevMove
 
-	check4Check:
-	TEST isWhiteMove, TRUE
-	JNZ checkWhiteChecked
-	MOV ebx, OFFSET bKingPos
-	PUSH ebx
-	MOV eax, bKingPos.coord
-	JMP checkChecked
-
-	checkWhiteChecked:
-	MOV ebx, OFFSET wKingPos
-	PUSH ebx
-	MOV eax, wKingPos.coord
-
-	checkChecked:
-	CALL checkCheck
-	POP ebx					; Discard if not check
+	checkCheckMv:
+	check4Check
 	TEST al, TRUE
 	JZ mvDone
 
