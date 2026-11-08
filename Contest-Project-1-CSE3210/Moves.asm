@@ -26,22 +26,32 @@ castle BYTE 8 DUP(0)		; 4 Bools each king:	1. True if king has moved
 wKingPos MOVESTRUCT <NULL,<5,1>,'K',BLACK>
 bKingPos MOVESTRUCT <NULL,<5,8>,'k',WHITE>
 
-check4check MACRO
-	LOCAL checkWhiteChecked, checkChecked
+getKing MACRO
+	LOCAL whiteKing, done
 	TEST isWhiteMove, TRUE
-	JNZ checkWhiteChecked
+	JNZ whiteKing
 	MOV ebx, OFFSET bKingPos
 	PUSH ebx
 	MOV eax, bKingPos.coord
-	JMP checkChecked
+	JMP done
 
-	checkWhiteChecked:
+	whiteKing:
 	MOV ebx, OFFSET wKingPos
 	PUSH ebx
 	MOV eax, wKingPos.coord
+	
+	done:
+	ENDM
 
-	checkChecked:
+check4Check MACRO
+	getKing
 	CALL checkCheck
+	POP ebx					; Discard if not check
+ENDM
+
+check4Checkmate MACRO
+	getKing
+	CALL checkCheckmate
 	POP ebx					; Discard if not check
 ENDM
 
@@ -144,6 +154,12 @@ MoveProc PROC
 	POP eax							; Put return value of move validity in eax
 	TEST cl, TRUE
 	JZ mvDone
+
+	PUSH eax
+	check4Checkmate					; Check if the move puts the opponent in check
+	MOV ecx, eax					; Put check status in ecx
+	POP eax							; Put return value of move validity in eax
+	TEST cl, TRUE
 
 	PUSH edi
 	MOV edi, OFFSET checkMove
@@ -716,9 +732,30 @@ checkCastle PROC
 	RET
 checkCastle ENDP
 
+; @Desc: Checks for checkmate
 check4Mate MACRO
+; @Params:	eax - contains DWORD coord
+;			dx  - contains one or two pieces in high and low bytes
+;					if one piece, upper byte contains 1
+; @Comment: The caller must pop the leftover original coord
+;			Caller must have isCheck label implemented
+	LOCAL done		; Prevent symbol redefinition error
 
-ENDM
+	PUSH eax
+	CALL isValidCoord
+	CMP eax, -1
+	JZ done
+	POP eax
+	PUSH eax
+	CALL GetSqrContent
+	CMP eax, NULL
+	JNZ done
+	CALL checkCheck
+	CMP al, FALSE
+	JZ notCheckmate
+
+	done:
+	ENDM
 
 ;
 checkCheckMate PROC
@@ -761,13 +798,13 @@ checkCheckMate PROC
 		check4Mate		;
 		POP eax			; Leftover from macro
 
-	notCheck:
-		MOV eax, FALSE
+	isCheckmate:
+		MOV eax, TRUE
 		JMP checked4Mate
 
-	isCheck:
+	notCheckmate:
 		POP eax			; Leftover, discard
-		MOV eax, TRUE
+		MOV eax, FALSE
 
 	checked4Mate:
 	POP edx
