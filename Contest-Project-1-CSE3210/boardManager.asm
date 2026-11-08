@@ -45,6 +45,8 @@ BoardProc PROC
 	JZ bpCheck
 	CMP eax, BP_TESTCHECK
 	JZ bpTestCheck
+	CMP eax, BP_TESTMATE
+	JZ bpTestMate
 	JMP bpDone
 
 	bpInit:
@@ -155,6 +157,23 @@ BoardProc PROC
 		MOV eax, prevHL.coord
 		CALL SetSqrContent
 		POP eax
+		JMP bpDone
+
+	bpTestMate:
+		MOVZX eax, (MOVESTRUCT PTR [esi]).piece		; Make king square empty
+		PUSH eax									;
+		PUSH NULL									;
+		MOV eax, (MOVESTRUCT PTR [esi]).coord		;
+		CALL SetSqrContent							;
+
+		MOV eax, MV_TESTMATE
+		CALL MoveProc
+		TEST al, TRUE			; If not check, then keep current position in board
+
+
+		; Piece was pushed before MoveProc Call
+		MOV eax, (MOVESTRUCT PTR [esi]).coord		; Restore king square
+		CALL SetSqrContent							;
 		JMP bpDone
 		
 	bpDone:

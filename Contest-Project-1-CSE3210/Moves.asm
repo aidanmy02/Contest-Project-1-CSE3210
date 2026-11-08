@@ -66,6 +66,8 @@ MoveProc PROC
 	JZ checkCheckMv
 	CMP eax, MV_TESTCHECK
 	JZ testCheck
+	CMP eax, MV_TESTMATE
+	JZ testMate
 
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
@@ -124,6 +126,10 @@ MoveProc PROC
 	check4Check						;
 	JMP doneMvProc					; Return result of check inquiry to board proc
 
+	testMate:
+	check4Checkmate
+	JMP doneMvProc
+
 	mvCheck:
  	CMP al, FALSE					; Check if new position is valid
 	JZ doneMvProc
@@ -155,18 +161,18 @@ MoveProc PROC
 	TEST cl, TRUE
 	JZ mvDone
 
-	PUSH eax
-	check4Checkmate					; Check if the move puts the opponent in check
-	MOV ecx, eax					; Put check status in ecx
-	POP eax							; Put return value of move validity in eax
-	TEST cl, TRUE
-
-	PUSH edi
-	MOV edi, OFFSET checkMove
-	MOV esi, ebx
-	MOV ecx, SIZEOF MOVESTRUCT
-	REP MOVSB
+	PUSH eax							; Copy checked kingPos into checkMove
+	PUSH edi							;
+	MOV edi, OFFSET checkMove			;
+	MOV esi, ebx						;
+	MOV ecx, SIZEOF MOVESTRUCT			;
+	REP MOVSB							;
 	POP edi
+	MOV checkMove.uMsg, BP_TESTMATE		; Call BoardProc to remove king for testing and then add back
+	MOV eax, OFFSET checkMove			;
+	PUSH eax							;
+	CALL BoardProc						;
+	POP eax
 
 	SUB esi, SIZEOF MOVESTRUCT
 	MOV (MOVESTRUCT PTR [esi]).uMsg, MV_CHECKED
@@ -748,7 +754,7 @@ check4Mate MACRO
 	POP eax
 	PUSH eax
 	CALL GetSqrContent
-	CMP eax, NULL
+	CMP al, NULL
 	JNZ done
 	CALL checkCheck
 	CMP al, FALSE
@@ -797,6 +803,8 @@ checkCheckMate PROC
 		AND eax, 1		; Check (0, 1)
 		check4Mate		;
 		POP eax			; Leftover from macro
+
+		MOV al, prevHL.piece		; Get checking piece
 
 	isCheckmate:
 		MOV eax, TRUE
