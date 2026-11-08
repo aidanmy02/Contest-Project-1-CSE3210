@@ -43,6 +43,8 @@ BoardProc PROC
 	JZ bpCastle
 	CMP eax, BP_CHECK
 	JZ bpCheck
+	CMP eax, BP_TESTCHECK
+	JZ bpTestCheck
 	JMP bpDone
 
 	bpInit:
@@ -135,7 +137,18 @@ BoardProc PROC
 								WM_SQR,\
 								esi,\
 								NULL
+	
+	; Tests if king is still in check in new position
+	bpTestCheck:
+		PUSH NULL
+		MOV eax, prevHL.coord
+		CALL SetSqrContent
 
+		MOVZX eax, curHL.piece
+		PUSH eax
+		MOV eax, curHL.coord
+		CALL SetSqrContent
+		
 	bpDone:
 	POP ebp
 	RET 4
