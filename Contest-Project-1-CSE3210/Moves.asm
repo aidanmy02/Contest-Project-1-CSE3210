@@ -54,6 +54,8 @@ MoveProc PROC
 
 	CMP eax, MV_CHECK
 	JZ checkCheckMv
+	CMP eax, MV_TESTCHECK
+	JZ testCheck
 
 	MOVZX ebx, prevHL.coord.y		; store prevHL.coord as a word in bx
 	SHL ebx, 8						; shift into bh
@@ -108,19 +110,32 @@ MoveProc PROC
 	CALL pMove
 	JMP mvCheck
 
-	mvCheck:
-	TEST al, TRUE
-	JNZ mvDone
+	testCheck:
+	check4Check
+	JMP doneMvProc					; Return result of check inquiry to board proc
 
-	check4Check						; Check if new position
-	CMP al, TRUE					;
-	JNZ mvDone
+	mvCheck:
+	CMP al, FALSE					; Check if new position is valid
+	JZ doneMvProc
+
+	PUSH eax						; Change board to new position to check if still in check
+	MOV prevHL.uMsg, BP_TESTCHECK	;
+	MOV eax, OFFSET prevHL			;
+	PUSH eax						;
+	INVOKE BoardProc				;
+
+									; eax contains truth value of check
+	POP ecx							; ecx contains true move is valid for moving piece
+	XOR eax, ecx					; True if valid move and not check, false if valid move and still check
+	JZ doneMvProc
+
 	MOV esi, OFFSET curHL			; Save new position in prevMove
 	MOV edi, OFFSET prevMove		;
 	MOV ecx, SIZEOF MOVESTRUCT		;
 	REP MOVSB						;
 	MOV bl, prevHL.piece
 	MOV prevMove.piece, bl			; Save moved piece in prevMove
+
 
 	checkCheckMv:
 	check4Check

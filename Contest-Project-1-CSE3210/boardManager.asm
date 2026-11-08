@@ -45,8 +45,6 @@ BoardProc PROC
 	JZ bpCheck
 	CMP eax, BP_TESTCHECK
 	JZ bpTestCheck
-	CMP eax, BP_UNDOCHECK
-	JZ bpUndoCheck
 	JMP bpDone
 
 	bpInit:
@@ -146,12 +144,11 @@ BoardProc PROC
 		MOV eax, prevHL.coord
 		CALL SetSqrContent
 
-		MOVZX eax, curHL.piece
+		MOVZX eax, prevHL.piece
 		PUSH eax
 		MOV eax, curHL.coord
 		CALL SetSqrContent
 
-	bpUndoCheck:
 		MOVZX eax, curHL.piece
 		PUSH eax
 		MOV eax, curHL.coord
@@ -161,6 +158,7 @@ BoardProc PROC
 		PUSH eax
 		MOV eax, prevHL.coord
 		CALL SetSqrContent
+		JMP bpDone
 		
 	bpDone:
 	POP ebp
