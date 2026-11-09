@@ -767,6 +767,30 @@ check4Mate MACRO
 	done:
 	ENDM
 
+isBlock MACRO
+	PUSH eax
+	CALL checkCheckRQ
+	TEST al, TRUE
+	JNZ gotCheckStatus
+
+	POP eax
+	PUSH eax
+	CALL checkCheckN
+	TEST al, TRUE
+	JNZ gotCheckStatus
+
+	POP eax
+	PUSH eax
+	CALL checkCheckBQ
+	TEST al, TRUE
+	JNZ gotCheckStatus
+
+	MOV eax, FALSE
+
+	gotCheckStatus:
+	ADD esp, 4
+ENDM
+
 ; @Desc: If the king has no legal moves, this checks if any pieces can block check
 checkBlock PROC
 ; @Params:	eax - ptr to MOVESTRUCT containing correct king info
@@ -825,7 +849,7 @@ checkBlock PROC
 			PUSH eax		; Save cur iter coord
 			PUSH ebx
 			PUSH ecx
-			CALL checkCheck
+			isBlock
 			POP ecx
 			POP ebx
 			POP edx			; Return cur iter coord to edx
