@@ -775,14 +775,20 @@ checkBlock PROC
 	PUSH ebx
 
 	MOV esi, eax
-	MOVZX eax, (MOVESTRUCT PTR [esi]).piece
-	XOR al, 20h			; switch king char to opposite color
 	MOV ebx, (MOVESTRUCT PTR [esi]).coord		; Get king coord
 	MOV ecx, curHL.coord						; Get coord of checking piece
 	MOVZX edx, curHL.piece
 	OR dl, 20h			; make lower case
 
+	CMP dl, 'p'
+	JZ checkPawnBlock
 
+	checkPawnBlock:
+		MOV eax, ecx		; King cannot take pawn; checkmate if no other piece can take pawn
+		CALL checkCheck		;
+		TEST al, TRUE		;
+		JZ isMate			;
+		JMP notMate			;
 
 	notMate:
 	MOV eax, FALSE
