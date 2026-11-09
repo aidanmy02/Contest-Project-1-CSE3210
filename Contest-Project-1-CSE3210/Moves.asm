@@ -8,6 +8,7 @@ PUBLIC checkMove
 
 EXTERN board:BOARDSTRUCT
 EXTERN isWhiteMove:BYTE
+EXTERN isWhitePiece:PROTO
 EXTERNDEF curHL:MOVESTRUCT
 EXTERNDEF prevHL:MOVESTRUCT
 
@@ -765,6 +766,13 @@ check4Mate MACRO
 	done:
 	ENDM
 
+; @Desc: If the king has no legal moves, this checks if any pieces can block check
+checkBlock PROC
+; @Params:	eax - ptr to MOVESTRUCT containing correct king info
+
+	RET
+checkBlock ENDP
+
 ;
 checkCheckMate PROC
 ; @Params:	eax - coordinate to check for checkmate
@@ -812,9 +820,14 @@ checkCheckMate PROC
 		check4Mate		;
 		POP eax			; Leftover from macro
 
-		MOV al, prevHL.piece		; Get checking piece
-		POP edx
-		XOR dl, 20h					; Make opposite color
+		POP eax						; Char for king
+		CALL isWhitePiece
+		CMP al, TRUE				; Get offset of MOVESTRUCT with king info
+		JNZ blackKing				;
+		MOV eax, OFFSET wKingPos	;
+		blackKing:					;
+		MOV eax, OFFSET bKingPos	;
+		CALL checkBlock				;
 
 	isCheckmate:
 		MOV eax, TRUE

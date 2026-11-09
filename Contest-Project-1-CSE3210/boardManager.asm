@@ -5,6 +5,7 @@ PUBLIC curHL
 PUBLIC prevHL
 PUBLIC isWhiteMove
 PUBLIC GetSqrContent
+PUBLIC isWhitePiece
 
 EXTERN MoveProc:PROTO
 EXTERN checkMove:MOVESTRUCT
