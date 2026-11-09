@@ -810,15 +810,33 @@ checkBlock PROC
 		JL negX
 		CMP eax, ecx
 		JG posXY
-		MOV ebx, 0FFFF0001h		; Increment x and decrement y from checking position
+			MOV ecx, 0FFFF0001h		; Increment x and decrement y from checking position
 		posXY:
-		MOV ebx, 00010001h		; Increment x and y from checking position
+			MOV ecx, 00010001h		; Increment x and y from checking position
 		negX:
-		CMP eax, ecx
-		JL negXY
-		MOV ebx, 00000FFFFh		; Decrement x and increment y from checking position
-		negXY:
-		MOV ebx, 0FFFEFFFFh		; Decrement x and y from checking piece to king pos
+			CMP eax, ecx
+			JL negXY
+				MOV ecx, 00000FFFFh		; Decrement x and increment y from checking position
+			negXY:
+				MOV ecx, 0FFFEFFFFh		; Decrement x and y from checking piece to king pos
+		
+		MOV eax, curHL.coord	; coord of checking piece
+		startBQBlock:
+			PUSH eax		; Save cur iter coord
+			PUSH ebx
+			PUSH ecx
+			CALL checkCheck
+			POP ecx
+			POP ebx
+			POP edx			; Return cur iter coord to edx
+			TEST al, TRUE
+			JNZ notMate
+			MOV eax, edx	; Put cur iter coord back in eax
+			ADD eax, ecx	; Add increment
+			CMP eax, (MOVESTRUCT PTR [esi]).coord	; If at king coord, mate
+			JZ isMate
+			JMP startBQBlock
+
 	notMate:
 	MOV eax, FALSE
 	JMP gotMateStatus
@@ -842,8 +860,8 @@ checkCheckMate PROC
 	MOV edx, 'K'		; Piece to check for
 	MOV dh, 1			; To not conflict with NULL for empty space
 
-	TEST isWhiteMove, TRUE
-	JZ startCheckK
+	TEST isWhiteMove, TRUE	; If black's turn, then checked king is white
+	JNZ startCheckK			;
 
 	ADD dl, 20h			; Make lower case if it is white's turn
 
@@ -884,11 +902,11 @@ checkCheckMate PROC
 
 		POP eax						; Char for king
 		CALL isWhitePiece
-		CMP al, TRUE				; Get offset of MOVESTRUCT with king info
-		JNZ blackKing				;
-		MOV eax, OFFSET wKingPos	;
-		blackKing:					;
+		TEST al, TRUE				; Get offset of MOVESTRUCT with king info
+		JNZ whiteKing				;
 		MOV eax, OFFSET bKingPos	;
+		whiteKing:					;
+		MOV eax, OFFSET wKingPos	;
 		CALL checkBlock				;
 
 	isCheckmate:
