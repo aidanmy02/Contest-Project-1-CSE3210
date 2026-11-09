@@ -769,6 +769,22 @@ check4Mate MACRO
 
 isBlock MACRO
 	PUSH eax
+	MOVZX esi, ax			; Get offset of current column
+	MUL esi					;
+	MOV esi, OFFSET board	;
+	ADD esi, eax			;
+	DEC esi					;
+	POP eax
+
+	MOV ecx, 9		; Max num sqrs to check for pawns 8 = 9 - 1
+	startIsPBlock:
+		LOOP loopIsPBlock
+		JMP endIsPBlock
+	loopIsPBlock:
+
+	endIsPBlock:
+
+	PUSH eax
 	CALL checkCheckRQ
 	TEST al, TRUE
 	JNZ gotCheckStatus
@@ -865,6 +881,7 @@ checkBlock PROC
 			PUSH eax
 			PUSH ebx
 			PUSH ecx
+			PUSH eax
 			isBlock
 			POP ecx
 			POP ebx
