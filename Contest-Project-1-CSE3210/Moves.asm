@@ -770,9 +770,19 @@ check4Mate MACRO
 checkBlock PROC
 ; @Params:	eax - ptr to MOVESTRUCT containing correct king info
 	PUSH esi
+	PUSH edx
+	PUSH ecx
+	PUSH ebx
+
 	MOV esi, eax
 	MOVZX eax, (MOVESTRUCT PTR [esi]).piece
 	XOR al, 20h			; switch king char to opposite color
+	MOV ebx, (MOVESTRUCT PTR [esi]).coord		; Get king coord
+	MOV ecx, curHL.coord						; Get coord of checking piece
+	MOVZX edx, curHL.piece
+	OR dl, 20h			; make lower case
+
+
 
 	notMate:
 	MOV eax, FALSE
@@ -782,6 +792,9 @@ checkBlock PROC
 	MOV eax, TRUE
 
 	gotMateStatus:
+	POP ebx
+	POP ecx
+	POP edx
 	POP esi
 	RET
 checkBlock ENDP
