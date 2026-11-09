@@ -769,7 +769,20 @@ check4Mate MACRO
 ; @Desc: If the king has no legal moves, this checks if any pieces can block check
 checkBlock PROC
 ; @Params:	eax - ptr to MOVESTRUCT containing correct king info
+	PUSH esi
+	MOV esi, eax
+	MOVZX eax, (MOVESTRUCT PTR [esi]).piece
+	XOR al, 20h			; switch king char to opposite color
 
+	notMate:
+	MOV eax, FALSE
+	JMP gotMateStatus
+
+	isMate:
+	MOV eax, TRUE
+
+	gotMateStatus:
+	POP esi
 	RET
 checkBlock ENDP
 
