@@ -162,16 +162,27 @@ BoardProc PROC
 
 	bpTestMate:
 		MOVZX eax, (MOVESTRUCT PTR [esi]).piece		; Make king square empty
-		PUSH eax									;
 		PUSH NULL									;
 		MOV eax, (MOVESTRUCT PTR [esi]).coord		;
 		CALL SetSqrContent							;
 
 		MOV eax, MV_TESTMATE
 		CALL MoveProc
-		TEST al, TRUE			; If not check, then keep current position in board
+		TEST al, TRUE			; If checkmate, paint checkmate
+		JNZ checkmate
+		JMP continueGame
 
+		checkmate:
+		MOV (MOVESTRUCT PTR [esi]).uMsg, WM_SQR
+		MOV (MOVESTRUCT PTR [esi]).sqrColor, CHECKMATEHL
+		INVOKE SendMessageA,	hWndMain,
+								WM_SQR,
+								esi,
+								NULL
+		MOV eax, -1
+		JMP bpDone
 
+		continueGame:
 		; Piece was pushed before MoveProc Call
 		MOV eax, (MOVESTRUCT PTR [esi]).coord		; Restore king square
 		CALL SetSqrContent							;

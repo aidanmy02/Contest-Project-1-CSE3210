@@ -162,8 +162,7 @@ MoveProc PROC
 	TEST cl, TRUE
 	JZ mvDone
 
-	PUSH eax							; Copy checked kingPos into checkMove
-	PUSH edi							;
+	PUSH edi							; Copy checked kingPos into checkMove
 	MOV edi, OFFSET checkMove			;
 	MOV esi, ebx						;
 	MOV ecx, SIZEOF MOVESTRUCT			;
@@ -173,7 +172,9 @@ MoveProc PROC
 	MOV eax, OFFSET checkMove			;
 	PUSH eax							;
 	CALL BoardProc						;
-	POP eax
+	CMP al, -1
+	JZ doneMvProc
+	MOV eax, ecx		; return piece
 
 	SUB esi, SIZEOF MOVESTRUCT
 	MOV (MOVESTRUCT PTR [esi]).uMsg, MV_CHECKED
