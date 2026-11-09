@@ -788,16 +788,37 @@ checkBlock PROC
 	MOVZX edx, curHL.piece
 	OR dl, 20h			; make lower case
 
+	CMP dl, 'b'
+	JZ checkBQBlock
+	CMP dl, 'n'
+	JZ checkPNBlock
 	CMP dl, 'p'
-	JZ checkPawnBlock
+	JZ checkPNBlock
 
-	checkPawnBlock:
+	; For pawns and knights, the only way to prevent checkmate if the king cannot move is to capture,
+	;	hence, checkCheck on the coordinate of the checking piece
+	checkPNBlock:
 		MOV eax, ecx		; King cannot take pawn; checkmate if no other piece can take pawn
 		CALL checkCheck		;
 		TEST al, TRUE		;
 		JZ isMate			;
 		JMP notMate			;
 
+	checkBQBlock:
+		MOV eax, ebx		; Diff of king x coord with checking piece coord
+		CMP ax, cx
+		JL negX
+		CMP eax, ecx
+		JG posXY
+		MOV ebx, 0FFFF0001h		; Increment x and decrement y from checking position
+		posXY:
+		MOV ebx, 00010001h		; Increment x and y from checking position
+		negX:
+		CMP eax, ecx
+		JL negXY
+		MOV ebx, 00000FFFFh		; Decrement x and increment y from checking position
+		negXY:
+		MOV ebx, 0FFFEFFFFh		; Decrement x and y from checking piece to king pos
 	notMate:
 	MOV eax, FALSE
 	JMP gotMateStatus
