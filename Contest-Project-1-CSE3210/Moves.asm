@@ -788,6 +788,7 @@ isBlock MACRO
 	MOV eax, FALSE
 
 	gotCheckStatus:
+
 	ADD esp, 4
 ENDM
 
@@ -844,9 +845,24 @@ checkBlock PROC
 			negXY:
 				MOV ecx, 0FFFEFFFFh		; Decrement x and y from checking piece to king pos
 		
+		; For coord of checking piece, use checkCheck since pawn can capture
 		MOV eax, curHL.coord	; coord of checking piece
+		PUSH eax				; Save cur iter coord
+		PUSH ebx
+		PUSH ecx
+		CALL checkCheck
+		POP ecx
+		POP ebx
+		POP edx			; Return cur iter coord to edx
+		TEST al, TRUE
+		JNZ notMate
+
 		startBQBlock:
-			PUSH eax		; Save cur iter coord
+			MOV eax, edx	; Put cur iter coord back in eax
+			ADD eax, ecx	; Add increment
+			CMP eax, (MOVESTRUCT PTR [esi]).coord	; If at king coord, mate
+			JZ isMate
+			PUSH eax
 			PUSH ebx
 			PUSH ecx
 			isBlock
@@ -855,10 +871,6 @@ checkBlock PROC
 			POP edx			; Return cur iter coord to edx
 			TEST al, TRUE
 			JNZ notMate
-			MOV eax, edx	; Put cur iter coord back in eax
-			ADD eax, ecx	; Add increment
-			CMP eax, (MOVESTRUCT PTR [esi]).coord	; If at king coord, mate
-			JZ isMate
 			JMP startBQBlock
 
 	notMate:
