@@ -770,12 +770,19 @@ check4Mate MACRO
 ; @Desc: If the king has no legal moves, this checks if any pieces can block check
 checkBlock PROC
 ; @Params:	eax - ptr to MOVESTRUCT containing correct king info
+; @Comment: This procedure checks each possible square to block the check, including captureing
+;				the checking piece. It does this with checkCheck. checkCheck checks if a king at a coord
+;				in check by any of the opponents pieces. By calling checkCheck on all possible blocking
+;				squares, checkmate can be determined by if any pieces attack any of these squares. If
+;				checkCheck returns true for all possible blocking squares, then it is checkmate.
+
 	PUSH esi
 	PUSH edx
 	PUSH ecx
 	PUSH ebx
 
 	MOV esi, eax
+	XOR isWhiteMove, TRUE						; Temporarily make other color's move
 	MOV ebx, (MOVESTRUCT PTR [esi]).coord		; Get king coord
 	MOV ecx, curHL.coord						; Get coord of checking piece
 	MOVZX edx, curHL.piece
@@ -799,6 +806,7 @@ checkBlock PROC
 	MOV eax, TRUE
 
 	gotMateStatus:
+	XOR isWhiteMove, TRUE		; Return to actual
 	POP ebx
 	POP ecx
 	POP edx
