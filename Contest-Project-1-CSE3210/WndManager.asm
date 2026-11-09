@@ -54,6 +54,7 @@ hWhiteBr DWORD ?
 hBlackBr DWORD ?
 hHLBr DWORD ?
 hCheckHLBr DWORD ?
+hCheckMateHLBr DWORD ?
 
 ; Params for MessageBoxA
 errMsg DWORD ?			; Input Param
@@ -319,6 +320,9 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 		CMP al, CHECKHL
 		JZ isCheckHLSqr
 
+		CMP al, CHECKMATEHL
+		JZ isCheckMateHLSqr
+
 		isWhiteSqr:
 			MOV eax, hWhiteBr
 			JMP gotSqrColor
@@ -333,6 +337,10 @@ WndProc PROC, hWnd:DWORD, wpUMsg:DWORD, wpWParam:DWORD, wpLParam:DWORD
 
 		isCheckHLSqr:
 			MOV eax, hCheckHLBr
+			JMP gotSqrColor
+
+		isCheckMateHLSqr:
+			MOV eax, hCheckMateHLBr
 			JMP gotSqrColor
 
 		gotSqrColor:
@@ -636,6 +644,9 @@ createWnd PROC
 
 	INVOKE CreateSolidBrush,	COLOR_CHECKHL
 	MOV hCheckHLBr, eax
+
+	INVOKE CreateSolidBrush,	COLOR_CHECKMATEHL
+	MOV hCheckMateHLBr, eax
 
 	RET 
 createWnd ENDP
