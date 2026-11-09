@@ -756,6 +756,8 @@ check4Mate MACRO
 	CALL GetSqrContent
 	CMP al, NULL
 	JNZ done
+	POP eax
+	PUSH eax
 	CALL checkCheck
 	CMP al, FALSE
 	JZ notCheckmate
@@ -769,13 +771,15 @@ checkCheckMate PROC
 	PUSH edx
 	MOV edx, 'K'		; Piece to check for
 	MOV dh, 1			; To not conflict with NULL for empty space
-	
+
 	TEST isWhiteMove, TRUE
 	JZ startCheckK
 
 	ADD dl, 20h			; Make lower case if it is white's turn
 
 	startCheckK:
+		PUSH edx		; Save piece
+
 		ADD eax, 10001h	; Check (1,1)
 		check4Mate		;
 		POP eax			; Leftover from macro
@@ -788,23 +792,29 @@ checkCheckMate PROC
 		check4Mate		;
 		POP eax			; Leftover from macro
 
-		ROL eax, 16		; Check (-1, 1)
+		SUB eax, 10000h	; Check (0, -1)
 		check4Mate		;
 		POP eax			; Leftover from macro
 
-		DEC ax			; Check (-1, 0)
+		SUB eax, 10000h	; Check (-1, -1)
 		check4Mate		;
 		POP eax			; Leftover from macro
 
-		DEC ax			; Check (-1, -1)
+		INC ax			; Check (-1, 0)
 		check4Mate		;
 		POP eax			; Leftover from macro
 
-		AND eax, 1		; Check (0, 1)
+		INC ax 			; Check (-1, 1)
+		check4Mate		;
+		POP eax			; Leftover from macro
+
+		ADD eax, 10000h	; Check (0, 1)
 		check4Mate		;
 		POP eax			; Leftover from macro
 
 		MOV al, prevHL.piece		; Get checking piece
+		POP edx
+		XOR dl, 20h					; Make opposite color
 
 	isCheckmate:
 		MOV eax, TRUE
@@ -812,6 +822,7 @@ checkCheckMate PROC
 
 	notCheckmate:
 		POP eax			; Leftover, discard
+		POP eax			;
 		MOV eax, FALSE
 
 	checked4Mate:
@@ -904,19 +915,23 @@ checkConflictK PROC
 		checkCoord		;
 		POP eax			; Leftover from macro
 
-		ROL eax, 16		; Check (-1, 1)
+		SUB eax, 10000h	; Check (0, -1)
 		checkCoord		;
 		POP eax			; Leftover from macro
 
-		DEC ax			; Check (-1, 0)
+		SUB eax, 10000h ; Check (-1, -1)
 		checkCoord		;
 		POP eax			; Leftover from macro
 
-		DEC ax			; Check (-1, -1)
+		INC ax			; Check (-1, 0)
 		checkCoord		;
 		POP eax			; Leftover from macro
 
-		AND eax, 1		; Check (0, 1)
+		INC ax			; Check (-1, 1)
+		checkCoord		;
+		POP eax			; Leftover from macro
+
+		ADD eax, 10000h	; Check (0, 1)
 		checkCoord		;
 		POP eax			; Leftover from macro
 
