@@ -862,6 +862,8 @@ checkBlock PROC
 
 	CMP dl, 'r'
 	JZ checkRQBlock
+	CMP dl, 'q'
+	JZ checkQBlock		; start with BQ and the try RQ
 	CMP dl, 'b'
 	JZ checkBQBlock
 	CMP dl, 'n'
@@ -877,6 +879,14 @@ checkBlock PROC
 		TEST al, TRUE		;
 		JZ isMate			;
 		JMP notMate			;
+
+	checkQBlock:
+		MOV eax, ebx		; If x or y coords are same, then rook else bishop
+		CMP ax, cx			;
+		JZ checkRQBlock		;
+		MOV ax, cx			;
+		CMP eax, ecx		;
+		JZ checkRQBlock		;
 
 	checkBQBlock:
 		MOV eax, ebx		; Diff of king x coord with checking piece coord
