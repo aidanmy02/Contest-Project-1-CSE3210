@@ -203,8 +203,9 @@ BoardProc PROC
 
 		continueGame:
 		; Piece was pushed before MoveProc Call
-		MOV eax, (MOVESTRUCT PTR [esi]).coord		; Restore king square
+		MOVZX eax, (MOVESTRUCT PTR [esi]).piece		; Restore king square
 		PUSH eax									;
+		MOv eax, (MOVESTRUCT PTR [esi]).coord		;
 		CALL SetSqrContent							;
 		JMP bpDone
 		

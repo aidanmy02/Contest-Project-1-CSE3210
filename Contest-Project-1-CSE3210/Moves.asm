@@ -245,7 +245,7 @@ pMove PROC
 		JNZ fwd2
 		CMP cl, NULL	; Check dest is empty
 		JNZ invalidP
-		JMP validP
+		JMP queening
 
 	; Case: move 2 forward
 	fwd2:
@@ -292,7 +292,7 @@ pMove PROC
 		JL invalidP
 		CMP cl, NULL		; Check en passant
 		JZ enPassant
-		JMP validP
+		JMP queening
 
 	enPassant:
 		MOV al, prevMove.piece
@@ -315,6 +315,21 @@ pMove PROC
 		CALL BoardProc
 		JMP validP
 
+	queening:
+		MOV al, prevHL.piece
+		CMP eax, 'P'
+		JZ queenWhite
+		MOV ax, curHL.coord.y
+		CMP ax, 1
+		JNZ validP
+		MOV prevHL.piece, 'q'
+
+		queenWhite:
+			MOV ax, curHL.coord.y
+			CMP ax, 8
+			JNZ validP
+			MOV prevHL.piece, 'Q'
+		
 	validP:
 		MOV isFwd2, FALSE
 	validFwd2:
