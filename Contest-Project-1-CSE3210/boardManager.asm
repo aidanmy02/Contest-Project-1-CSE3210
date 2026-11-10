@@ -161,9 +161,27 @@ BoardProc PROC
 		JMP bpDone
 
 	bpTestMate:
-		MOVZX eax, (MOVESTRUCT PTR [esi]).piece		; Make king square empty
+		MOVZX eax, curHL.piece
+		CALL isWhitePiece			; Get placeholder piece for king
+		CMP al, TRUE				;
+		JZ whitePiece				;
+		CMP eax, 'n'				;
+		JNZ useWPawn				;
+		MOV eax, 'P'				;
+		JMP startSwap				;
+		useWPawn:					;
+		MOV eax, 'N'				;
+		JMP startSwap				;
+		whitePiece:					;
+			CMP eax, 'N'			;
+			JNZ useBPawn			;
+			MOV eax, 'p'			;
+			JMP startSwap			;
+			useBPawn:				;
+			MOV eax, 'n'			;
+
+		startSwap:
 		PUSH eax									;
-		PUSH NULL									;
 		MOV eax, (MOVESTRUCT PTR [esi]).coord		;
 		CALL SetSqrContent							;
 
@@ -186,6 +204,7 @@ BoardProc PROC
 		continueGame:
 		; Piece was pushed before MoveProc Call
 		MOV eax, (MOVESTRUCT PTR [esi]).coord		; Restore king square
+		PUSH eax									;
 		CALL SetSqrContent							;
 		JMP bpDone
 		
