@@ -860,6 +860,8 @@ checkBlock PROC
 	MOVZX edx, curHL.piece
 	OR dl, 20h			; make lower case
 
+	CMP dl, 'r'
+	JZ checkRQBlock
 	CMP dl, 'b'
 	JZ checkBQBlock
 	CMP dl, 'n'
@@ -883,15 +885,19 @@ checkBlock PROC
 		CMP eax, ecx
 		JG posXY
 			MOV ecx, 0FFFF0001h		; Increment x and decrement y from checking position
+			JMP gotIncBQ
 		posXY:
 			MOV ecx, 00010001h		; Increment x and y from checking position
+			JMP gotIncBQ
 		negX:
 			CMP eax, ecx
 			JL negXY
 				MOV ecx, 00000FFFFh		; Decrement x and increment y from checking position
+				JMP gotIncBQ
 			negXY:
 				MOV ecx, 0FFFEFFFFh		; Decrement x and y from checking piece to king pos
 		
+		gotIncBQ:
 		; For coord of checking piece, use checkCheck since pawn can capture
 		MOV eax, curHL.coord	; coord of checking piece
 		PUSH eax				; Save cur iter coord
@@ -923,6 +929,59 @@ checkBlock PROC
 			TEST al, TRUE
 			JNZ notMate
 			JMP startBQBlock
+
+		checkRQBlock:
+		MOV eax, ebx		; Diff of king x coord with checking piece coord
+		CMP ax, cx
+		JZ vertical
+		CMP ax, cx
+		JG posX
+			MOV ecx, -1		; Increment x and decrement y from checking position
+			JMP gotIncRQ
+		posX:
+			MOV ecx, 1		; Increment x and y from checking position
+			JMP gotIncRQ
+		vertical:
+			CMP eax, ecx
+			JL negY
+				MOV ecx, 10000h				; increment y from checking position
+				JMP gotIncRQ
+			negY:
+				MOV ecx, 0FFFF0000h			; Decrement y from checking piece to king pos
+				JMP gotIncRQ
+		
+		gotIncRQ:
+		; For coord of checking piece, use checkCheck since pawn can capture
+		MOV eax, curHL.coord	; coord of checking piece
+		PUSH eax				; Save cur iter coord
+		PUSH ebx
+		PUSH ecx
+		PUSH esi
+		CALL checkCheck
+		POP esi
+		POP ecx
+		POP ebx
+		POP edx			; Return cur iter coord to edx
+		TEST al, TRUE
+		JNZ notMate
+
+		startRQBlock:
+			MOV eax, edx	; Put cur iter coord back in eax
+			ADD eax, ecx	; Add increment
+			CMP eax, (MOVESTRUCT PTR [esi]).coord	; If at king coord, mate
+			JZ isMate
+			PUSH eax
+			PUSH ebx
+			PUSH ecx
+			PUSH esi
+			isBlock
+			POP esi
+			POP ecx
+			POP ebx
+			POP edx			; Return cur iter coord to edx
+			TEST al, TRUE
+			JNZ notMate
+			JMP startRQBlock
 
 	notMate:
 	MOV eax, FALSE
