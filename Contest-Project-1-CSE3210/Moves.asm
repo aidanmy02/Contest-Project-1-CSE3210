@@ -768,20 +768,35 @@ check4Mate MACRO
 	ENDM
 
 isBlock MACRO
+LOCAL foundPiece, blackPawn, startIsPBlock, loopIsPBlock, nextSqr, endIsPBlock, gotCheckStatus
 	PUSH eax
 	MOVZX esi, ax			; Get offset of current column
 	MUL esi					;
 	MOV esi, OFFSET board	;
 	ADD esi, eax			;
 	DEC esi					;
-	POP eax
+	
+	MOV eax, 'P'			; Get opposite color pawn of current player's color
+	TEST isWhiteMove, TRUE	;
+	JNZ blackPawn			;
+	MOV edx, 'P'			;
+	JMP foundPiece			;
+	blackPawn:				;
+	MOV edx, 'p'			;
 
+	foundPiece:
+	POP eax
 	MOV ecx, 9		; Max num sqrs to check for pawns 8 = 9 - 1
 	startIsPBlock:
 		LOOP loopIsPBlock
 		JMP endIsPBlock
 	loopIsPBlock:
-
+		PUSH eax
+		CMP dl, BYTE PTR [esi]
+		JNZ nextSqr
+		
+		nextSqr:
+			INC esi
 	endIsPBlock:
 
 	PUSH eax
