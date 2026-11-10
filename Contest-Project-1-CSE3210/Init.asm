@@ -13,13 +13,6 @@ init PROC
 						NULL,\				; lpCmdLine
 						SW_SHOWDEFAULT		; nShowCmd
 	MOV status, eax
-
-	COMMENT @
-	INVOKE BoardProc,	BP_INIT,\			; uMsg
-						NULL,\				; col
-						NULL,\				; row
-						NULL				; piece
-	COMMENT @
 	POP ebp
 	RET
 init ENDP

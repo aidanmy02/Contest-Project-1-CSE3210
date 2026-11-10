@@ -102,8 +102,9 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -153,7 +154,6 @@
       <FileType>Document</FileType>
     </MASM>
     <MASM Include="Moves.asm" />
-    <MASM Include="Semaphore.asm" />
     <MASM Include="WndManager.asm" />
   </ItemGroup>
   <ItemGroup>

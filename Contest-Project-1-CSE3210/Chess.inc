@@ -63,10 +63,6 @@ HL EQU 2
 CHECKHL EQU 3
 CHECKMATEHL EQU 4
 
-; Semaphore Codes
-EXTERN SEM_PAINT:ABS
-EXTERN SEM_MOVE:ABS
-
 ; Piece Codes
 WPAWN EQU 'P'
 WROOK EQU 'R'
@@ -137,14 +133,6 @@ WinMain PROTO,			hInstance:DWORD,\
 						hPrevInstance:DWORD,\
 						lpCmdLine:DWORD,\
 						nShowCmd:DWORD
-
-; Sempaphore function declarations
-InitSem EQU <InitSem@0>
-SignalSem EQU <SignalSem@0>
-WaitSem EQU <WaitSem@0>
-EXTERN InitSem:PROC
-EXTERN SignalSem:PROC
-EXTERN WaitSem:PROC
 
 ; System Call Prototypes and Sources for Information
 ; TODO: For debugging; remove later
