@@ -162,6 +162,7 @@ BoardProc PROC
 
 	bpTestMate:
 		MOVZX eax, (MOVESTRUCT PTR [esi]).piece		; Make king square empty
+		PUSH eax									;
 		PUSH NULL									;
 		MOV eax, (MOVESTRUCT PTR [esi]).coord		;
 		CALL SetSqrContent							;

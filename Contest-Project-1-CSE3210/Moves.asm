@@ -770,10 +770,10 @@ check4Mate MACRO
 isBlock MACRO
 LOCAL foundPiece, blackPawn, startIsPBlock, loopIsPBlock, nextSqr, endIsPBlock, gotCheckStatus
 	PUSH eax
-	MOVZX esi, ax			; Get offset of current column
-	MUL esi					;
-	MOV esi, OFFSET board	;
-	ADD esi, eax			;
+	MOV bx, ax				; Get offset of current column
+	MUL bx					;
+	MOVZX esi, ax			;
+	ADD esi, OFFSET board	;
 	DEC esi					;
 	
 	MOV eax, 'P'			; Get opposite color pawn of current player's color
@@ -794,9 +794,26 @@ LOCAL foundPiece, blackPawn, startIsPBlock, loopIsPBlock, nextSqr, endIsPBlock, 
 		PUSH eax
 		CMP dl, BYTE PTR [esi]
 		JNZ nextSqr
-		
+		PUSH edx
+		PUSH ecx
+		MOVZX ebx, al	; x coord of pawn position
+		MOV bh, cl		; Get y coord of pawn position
+		SUB bh, 9		;
+		NEG bh			;
+		MOV cl, NULL	; prevCoord piece is pawn
+		MOV ch, dl		; curCoord piece is NULL
+		MOV edx, eax
+		SHR edx, 8		; Put y coord in high word of eax into dh
+		MOV dl, al		; x coord of position to check
+		CALL pMove
+		POP ecx
+		POP edx
+		TEST al, TRUE
+		JNZ gotCheckStatus
 		nextSqr:
+			POP eax
 			INC esi
+		JMP startIsPBlock
 	endIsPBlock:
 
 	PUSH eax
@@ -819,7 +836,6 @@ LOCAL foundPiece, blackPawn, startIsPBlock, loopIsPBlock, nextSqr, endIsPBlock, 
 	MOV eax, FALSE
 
 	gotCheckStatus:
-
 	ADD esp, 4
 ENDM
 
@@ -881,7 +897,9 @@ checkBlock PROC
 		PUSH eax				; Save cur iter coord
 		PUSH ebx
 		PUSH ecx
+		PUSH esi
 		CALL checkCheck
+		POP esi
 		POP ecx
 		POP ebx
 		POP edx			; Return cur iter coord to edx
@@ -896,8 +914,9 @@ checkBlock PROC
 			PUSH eax
 			PUSH ebx
 			PUSH ecx
-			PUSH eax
+			PUSH esi
 			isBlock
+			POP esi
 			POP ecx
 			POP ebx
 			POP edx			; Return cur iter coord to edx
@@ -976,6 +995,8 @@ checkCheckMate PROC
 		whiteKing:					;
 		MOV eax, OFFSET wKingPos	;
 		CALL checkBlock				;
+		TEST al, TRUE
+		JZ blockFound
 
 	isCheckmate:
 		MOV eax, TRUE
@@ -984,6 +1005,7 @@ checkCheckMate PROC
 	notCheckmate:
 		POP eax			; Leftover, discard
 		POP eax			;
+	blockFound:
 		MOV eax, FALSE
 
 	checked4Mate:
